@@ -27,43 +27,49 @@ const TripDetailsModal = ({ trip, isOpen, onClose }) => {
   };
 
   return (
-    <div className="modal-overlay" onClick={onClose}>
-      <div className="trip-details-modal" onClick={e => e.stopPropagation()}>
-        <div className="modal-header">
-          <h2>🗺️ Trip Details</h2>
-          <button className="close-btn" onClick={onClose}>×</button>
+    <div className="modal-overlay redesigned-modal-overlay" onClick={onClose}>
+      <div className="redesigned-trip-details-modal" onClick={e => e.stopPropagation()}>
+        <div className="redesigned-modal-header">
+          <div className="redesigned-modal-title">
+            <span className="modal-icon">🗺️</span>
+            <span>Trip Details</span>
+          </div>
+          <button className="redesigned-close-btn" onClick={onClose}>×</button>
         </div>
-        
-        <div className="modal-content">
-          {/* Trip Summary */}
-          <div className="trip-summary-section">
-            <h3>📋 Trip Summary</h3>
-            <div className="summary-grid">
-              <div className="summary-item">
-                <strong>Destination:</strong> {tripSummary.destination || 'N/A'}
+        <div className="redesigned-modal-content">
+          <div className="redesigned-trip-summary-section">
+            <h3 className="redesigned-section-title"><span role="img" aria-label="summary">📝</span> Trip Summary</h3>
+            <div className="redesigned-summary-grid">
+              <div className="redesigned-summary-card">
+                <span className="redesigned-summary-label">Destination</span>
+                <span className="redesigned-summary-value">{tripSummary.destination || 'N/A'}</span>
               </div>
-              <div className="summary-item">
-                <strong>Origin:</strong> {tripSummary.origin || 'N/A'}
+              <div className="redesigned-summary-card">
+                <span className="redesigned-summary-label">Origin</span>
+                <span className="redesigned-summary-value">{tripSummary.origin || 'N/A'}</span>
               </div>
-              <div className="summary-item">
-                <strong>Duration:</strong> {tripSummary.duration || 'N/A'} days
+              <div className="redesigned-summary-card">
+                <span className="redesigned-summary-label">Duration</span>
+                <span className="redesigned-summary-value">{tripSummary.duration || 'N/A'} days</span>
               </div>
-              <div className="summary-item">
-                <strong>Start Date:</strong> {tripSummary.start_date ? formatDate(tripSummary.start_date) : 'N/A'}
+              <div className="redesigned-summary-card">
+                <span className="redesigned-summary-label">Start Date</span>
+                <span className="redesigned-summary-value">{tripSummary.start_date ? formatDate(tripSummary.start_date) : 'N/A'}</span>
               </div>
-              <div className="summary-item">
-                <strong>Total Budget:</strong> {tripSummary.total_budget ? formatCurrency(tripSummary.total_budget) : 'N/A'}
+              <div className="redesigned-summary-card">
+                <span className="redesigned-summary-label">Total Budget</span>
+                <span className="redesigned-summary-value">{tripSummary.total_budget ? formatCurrency(tripSummary.total_budget) : 'N/A'}</span>
               </div>
-              <div className="summary-item">
-                <strong>Accepted On:</strong> {new Date(trip.createdAt).toLocaleDateString()}
+              <div className="redesigned-summary-card">
+                <span className="redesigned-summary-label">Accepted On</span>
+                <span className="redesigned-summary-value">{trip.createdAt ? new Date(trip.createdAt).toLocaleDateString() : 'N/A'}</span>
               </div>
             </div>
           </div>
-
           {/* Daily Itinerary */}
           {dailyItinerary.length > 0 && (
-            <div className="itinerary-section">
-              <h3>📅 Daily Itinerary</h3>
+            <div className="redesigned-itinerary-section">
+              <h3 className="redesigned-section-title">📅 Daily Itinerary</h3>
               <div className="itinerary-timeline">
                 {dailyItinerary.map((day, index) => (
                   <div key={index} className="day-card-modal">
@@ -75,7 +81,6 @@ const TripDetailsModal = ({ trip, isOpen, onClose }) => {
                         {day.weather && <span className="day-weather">🌤️ {day.weather}</span>}
                       </div>
                     </div>
-
                     <div className="day-activities-modal">
                       {/* Transportation to Morning Activity */}
                       {day.transportation_morning && (
@@ -92,7 +97,6 @@ const TripDetailsModal = ({ trip, isOpen, onClose }) => {
                           </div>
                         </div>
                       )}
-
                       {/* Morning Activity */}
                       {day.morning_activity && (
                         <div className="activity-block-modal morning">
@@ -112,16 +116,15 @@ const TripDetailsModal = ({ trip, isOpen, onClose }) => {
                             {day.morning_activity.highlights && (
                               <p className="highlights-modal">✨ {day.morning_activity.highlights}</p>
                             )}
-                            <TripImage 
-                              src={day.morning_activity.image_url} 
-                              alt={day.morning_activity.spot_name} 
+                            <TripImage
+                              src={day.morning_activity.image_url}
+                              alt={day.morning_activity.spot_name}
                               className="activity-image-modal"
                               fallbackType="spot"
                             />
                           </div>
                         </div>
                       )}
-
                       {/* Transportation to Lunch */}
                       {day.transportation_lunch && (
                         <div className="transport-block-modal">
@@ -137,7 +140,6 @@ const TripDetailsModal = ({ trip, isOpen, onClose }) => {
                           </div>
                         </div>
                       )}
-
                       {/* Lunch Options */}
                       {day.lunch_options && day.lunch_options.length > 0 && (
                         <div className="activity-block-modal lunch">
@@ -151,9 +153,9 @@ const TripDetailsModal = ({ trip, isOpen, onClose }) => {
                                 <span className="cost-modal">৳{restaurant.cost_per_person}/person</span>
                                 {restaurant.address && <p className="address-modal">📍 {restaurant.address}</p>}
                                 {restaurant.specialties && <p className="specialties-modal">🍽️ {restaurant.specialties}</p>}
-                                <TripImage 
-                                  src={restaurant.image_url} 
-                                  alt={restaurant.restaurant_name} 
+                                <TripImage
+                                  src={restaurant.image_url}
+                                  alt={restaurant.restaurant_name}
                                   className="activity-image-modal small"
                                   fallbackType="restaurant"
                                 />
@@ -162,7 +164,6 @@ const TripDetailsModal = ({ trip, isOpen, onClose }) => {
                           </div>
                         </div>
                       )}
-
                       {/* Transportation to Afternoon Activity */}
                       {day.transportation_afternoon && (
                         <div className="transport-block-modal">
@@ -178,7 +179,6 @@ const TripDetailsModal = ({ trip, isOpen, onClose }) => {
                           </div>
                         </div>
                       )}
-
                       {/* Afternoon Activities */}
                       {day.afternoon_activities && day.afternoon_activities.length > 0 && (
                         <div className="activity-block-modal afternoon">
@@ -201,9 +201,9 @@ const TripDetailsModal = ({ trip, isOpen, onClose }) => {
                                 {activity.highlights && (
                                   <p className="highlights-modal">✨ {activity.highlights}</p>
                                 )}
-                                <TripImage 
-                                  src={activity.image_url} 
-                                  alt={activity.spot_name} 
+                                <TripImage
+                                  src={activity.image_url}
+                                  alt={activity.spot_name}
                                   className="activity-image-modal small"
                                   fallbackType="spot"
                                 />
@@ -212,7 +212,6 @@ const TripDetailsModal = ({ trip, isOpen, onClose }) => {
                           </div>
                         </div>
                       )}
-
                       {/* Transportation to Dinner */}
                       {day.transportation_dinner && (
                         <div className="transport-block-modal">
@@ -228,7 +227,6 @@ const TripDetailsModal = ({ trip, isOpen, onClose }) => {
                           </div>
                         </div>
                       )}
-
                       {/* Dinner Options */}
                       {day.dinner_options && day.dinner_options.length > 0 && (
                         <div className="activity-block-modal dinner">
@@ -242,9 +240,9 @@ const TripDetailsModal = ({ trip, isOpen, onClose }) => {
                                 <span className="cost-modal">৳{restaurant.cost_per_person}/person</span>
                                 {restaurant.address && <p className="address-modal">📍 {restaurant.address}</p>}
                                 {restaurant.specialties && <p className="specialties-modal">🍽️ {restaurant.specialties}</p>}
-                                <TripImage 
-                                  src={restaurant.image_url} 
-                                  alt={restaurant.restaurant_name} 
+                                <TripImage
+                                  src={restaurant.image_url}
+                                  alt={restaurant.restaurant_name}
                                   className="activity-image-modal small"
                                   fallbackType="restaurant"
                                 />
@@ -253,7 +251,6 @@ const TripDetailsModal = ({ trip, isOpen, onClose }) => {
                           </div>
                         </div>
                       )}
-
                       {/* Transportation to Hotel */}
                       {day.transportation_hotel && (
                         <div className="transport-block-modal">
@@ -269,7 +266,6 @@ const TripDetailsModal = ({ trip, isOpen, onClose }) => {
                           </div>
                         </div>
                       )}
-
                       {/* Accommodation */}
                       {day.accommodation_options && day.accommodation_options.length > 0 && (
                         <div className="activity-block-modal accommodation">
@@ -298,9 +294,9 @@ const TripDetailsModal = ({ trip, isOpen, onClose }) => {
                                 {hotel.facilities && (
                                   <p className="facilities-modal">🏊 {hotel.facilities}</p>
                                 )}
-                                <TripImage 
-                                  src={hotel.image_url} 
-                                  alt={hotel.hotel_name} 
+                                <TripImage
+                                  src={hotel.image_url}
+                                  alt={hotel.hotel_name}
                                   className="activity-image-modal small"
                                   fallbackType="hotel"
                                 />
@@ -309,7 +305,6 @@ const TripDetailsModal = ({ trip, isOpen, onClose }) => {
                           </div>
                         </div>
                       )}
-
                       {/* Daily Budget */}
                       {day.day_budget && (
                         <div className="day-budget-modal">
@@ -329,7 +324,6 @@ const TripDetailsModal = ({ trip, isOpen, onClose }) => {
               </div>
             </div>
           )}
-
           {/* Budget Summary */}
           {budgetSummary && Object.keys(budgetSummary).length > 0 && (
             <div className="budget-summary-modal">
@@ -367,7 +361,6 @@ const TripDetailsModal = ({ trip, isOpen, onClose }) => {
             </div>
           )}
         </div>
-
         <div className="modal-footer">
           <button className="btn-outline" onClick={onClose}>
             Close

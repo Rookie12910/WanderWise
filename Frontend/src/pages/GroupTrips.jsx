@@ -1,16 +1,23 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import GroupTripManager from '../components/GroupTripManager';
 import GroupTripBrowser from '../components/GroupTripBrowser';
 import './GroupTrips.css';
 
 const GroupTrips = () => {
     const [activeTab, setActiveTab] = useState('browse'); // 'browse' or 'manage'
-
+    const navigate = useNavigate(); 
     return (
         <div className="group-trips-page">
             <div className="group-trips-header">
                 <h1>Group Trips</h1>
                 <p>Connect with fellow travelers and explore the world together</p>
+                <button 
+                    className="back-to-home-btn"
+                    onClick={() => navigate('/')}
+                >
+                    Back to Home
+                </button>
             </div>
 
             <div className="group-trips-nav">

@@ -2,9 +2,12 @@ package com.example.demo.Controller;
 
 import com.example.demo.dto.CreateFeaturedDestinationRequest;
 import com.example.demo.dto.BlogPostDTO;
+import com.example.demo.dto.TravelCitiesDto;
 import com.example.demo.entity.FeaturedDestination;
+import com.example.demo.entity.TripActivity;
 import com.example.demo.entity.User;
 import com.example.demo.service.AdminService;
+import com.example.demo.service.TripPlanService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -25,7 +28,8 @@ public class AdminController {
 
     @Autowired
     private AdminService adminService;
-
+    @Autowired
+    private TripPlanService tripPlanService;
     /**
      * Create a new featured destination
      * 
@@ -185,5 +189,31 @@ public class AdminController {
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
                     .body(Map.of("message", e.getMessage()));
         }
+    }
+
+    @PostMapping("addcity")
+    public ResponseEntity<?> addCity(@AuthenticationPrincipal User user, @RequestBody String request)
+    {
+        if (!"ADMIN".equals(user.getRole())) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                    .body(Map.of("message", "Only admin users can perform this action"));
+        }
+        try {
+//            String name=String.valueOf(request.get("acitivity"));
+            System.out.println(request);
+            adminService.addCity(request);
+            Map<String, String> response = new HashMap<>();
+            response.put("message", "City added successfully");
+            return ResponseEntity.ok(response);
+        } catch (RuntimeException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(Map.of("message", e.getMessage()));
+        }
+    }
+    @GetMapping("getHits")
+    public ResponseEntity<?> getCityByVisit(){
+        HashMap<String,Integer>res=tripPlanService.getCityCount();
+        System.out.println(res);
+        return ResponseEntity.ok(res);
     }
 }

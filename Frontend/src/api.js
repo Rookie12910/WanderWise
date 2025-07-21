@@ -311,6 +311,28 @@ export const tripApi = {
             };
         }
     },
+    //checklist
+    getCheckList: async(tripId) =>{
+        try{
+            const response=await api.get(`/api/checklist/${tripId}`);
+            return response.data;
+        }catch (error) {
+            console.error('Error fetching checklist:', error);
+            throw error;
+        }
+    },
+    updateChecklistItem: async(tripId, activity, completed) => {
+        try {
+            const response = await api.post(`/api/checklist/${tripId}/update`, {
+                activity: activity,
+                completed: completed
+            });
+            return response.data;
+        } catch (error) {
+            console.error('Error updating checklist item:', error);
+            throw error;
+        }
+    }
 };
 
 // API Functions for Admin Features
@@ -322,6 +344,18 @@ export const adminApi = {
             return response.data;
         } catch (error) {
             console.error('Error fetching featured destinations:', error);
+            throw error;
+        }
+    },
+
+    addCity: async (cityData) => {
+        try {
+            console.log('API: Adding city with data:', cityData);
+            const response = await api.get('/api/admin/getHits');
+            console.log(response.data);
+            return response.data;
+        } catch (error) {
+            console.error('Error adding city:', error);
             throw error;
         }
     },

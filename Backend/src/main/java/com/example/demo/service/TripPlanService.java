@@ -504,4 +504,33 @@ public class TripPlanService {
         tripActivity.setCompleted(completed);
         tripActivityRepository.save(tripActivity);
     }
+
+    public HashMap<String,Integer> getCityCount(){
+        List<TripPlan> tripPlans=tripPlanRepository.findAll();
+        HashMap<String,Integer> maps=new HashMap<>();
+        System.out.println(tripPlans.size());
+        for (TripPlan tripPlan : tripPlans){
+            String jsonString= tripPlan.getTripPlan(); //check it
+            System.out.println(jsonString);
+            System.out.println(jsonString);
+            ObjectMapper mapper = new ObjectMapper();
+            JsonNode root = null;
+            try {
+                root = mapper.readTree(jsonString);
+            } catch (JsonProcessingException e) {
+                throw new RuntimeException(e);
+            }
+            JsonNode itinerary = root.path("trip_summary");
+            String cityNode = itinerary.path("destination").asText();
+//                maps.put(cityNode, maps.get(cityNode) + 1);
+            if (maps.get(cityNode) == null) {
+                maps.put(cityNode, 1);
+            } else
+                maps.put(cityNode, maps.get(cityNode) + 1);
+        }
+        for(Integer x: maps.values()){
+            System.out.println("City "+x);
+        }
+        return maps;
+    }
 }

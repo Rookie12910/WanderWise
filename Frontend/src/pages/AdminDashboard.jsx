@@ -24,6 +24,13 @@ const AdminDashboard = () => {
     avgRating: '',
     isActive: true
   });
+  const [spotData, setSpotData] = useState({
+    name: '',
+  });
+  const [cityData, setCityData] = useState({
+    name: '',
+    count: ''
+  });
   const [imageFile, setImageFile] = useState(null);
   const [imagePreview, setImagePreview] = useState(null);
   const [formErrors, setFormErrors] = useState({});
@@ -88,6 +95,16 @@ const AdminDashboard = () => {
     
     setFormErrors(errors);
     return Object.keys(errors).length === 0;
+  };
+
+  const handleData = async (data) => {
+    try {
+      const data=await adminApi.addCity();
+      setCityData(data||{});
+    }catch (err) {
+      console.error('Error getting city:', err);
+      showNotification('Failed to get city', 'error');
+    }
   };
 
   const handleSubmit = async (e) => {
@@ -209,6 +226,12 @@ const AdminDashboard = () => {
           onClick={() => setActiveSection('destinations')}
         >
           Manage Featured Destinations
+        </button>
+        <button
+          className={`admin-menu-item ${activeSection === 'add spot' ? 'active' : ''}`}
+          onClick={() => setActiveSection('add spot')}
+        >
+          Add New Spot
         </button>
         {/* Add more menu items here as needed */}
       </div>
@@ -367,7 +390,6 @@ const AdminDashboard = () => {
           )}
         </div>
       )}
-
       {/* Add New Destination Modal */}
       {isModalOpen && (
         <div className="modal-overlay">
@@ -490,6 +512,27 @@ const AdminDashboard = () => {
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+      {/* my addition */}
+       {activeSection === 'add spot' && (
+        <div className="section-content">
+          <div className="section-header">
+            <h2>Get Travelled City</h2>
+            <button 
+              className="add-city-btn" 
+              onClick={() => handleData()}
+            >
+              Add city
+            </button>
+            <ul className='city-list'>  
+              {Object.entries(cityData).map(([name, count], index) => (
+                <li key={index}>
+                  <strong>{name}:</strong> {count}
+                </li>
+              ))}
+            </ul>
           </div>
         </div>
       )}

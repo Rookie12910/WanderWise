@@ -99,13 +99,16 @@ const Home = () => {
         {effectiveUser ? (
           <div className="action-buttons">
             <NotificationCenter />
-            {effectiveUser.role === 'ADMIN' && (
+            {effectiveUser.role === 'ADMIN' ? (
               <button onClick={() => navigate('/admin')} className="btn-outline admin-btn">Admin Dashboard</button>
+            ) : (
+              <>
+                <button onClick={navigateToCreateBlog} className="btn-outline">Write Blog</button>
+                <button onClick={() => navigate('/my-trips')} className="btn-outline nav-btn">My Trips</button>
+                <button onClick={() => navigate('/group-trips')} className="btn-outline nav-btn">Group Trips</button>
+                <button onClick={() => navigate('/profile')} className="btn-outline">Profile</button>
+              </>
             )}
-            <button onClick={navigateToCreateBlog} className="btn-outline">Write Blog</button>
-            <button onClick={() => navigate('/my-trips')} className="btn-outline nav-btn">My Trips</button>
-            <button onClick={() => navigate('/group-trips')} className="btn-outline nav-btn">Group Trips</button>
-            <button onClick={() => navigate('/profile')} className="btn-outline">Profile</button>
             <button onClick={handleLogout} className="btn-outline">Logout</button>
           </div>
         ) : (
@@ -114,7 +117,7 @@ const Home = () => {
           </div>
         )}
       </nav>
-      
+
       <div className="welcome-section">
         {effectiveUser ? (
           <h1>Welcome, {effectiveUser.username || effectiveUser.email}!</h1>
@@ -122,11 +125,13 @@ const Home = () => {
           <h1>Welcome to WanderWise!</h1>
         )}
         <p>Discover amazing destinations and plan your perfect trip.</p>
-        <div className="action-buttons">
-          <button className="btn-primary" onClick={navigateToCreateTrip}>Create New Trip</button>
-          <button className="btn-secondary" onClick={navigateToMyTrips}>View My Trips</button>
-          <button className="btn-secondary" onClick={() => navigate('/group-trips')}>Browse Group Trips</button>
-        </div>
+        {(!effectiveUser || effectiveUser.role !== 'ADMIN') && (
+          <div className="action-buttons">
+            <button className="btn-primary" onClick={navigateToCreateTrip}>Create New Trip</button>
+            <button className="btn-secondary" onClick={navigateToMyTrips}>View My Trips</button>
+            <button className="btn-secondary" onClick={() => navigate('/group-trips')}>Browse Group Trips</button>
+          </div>
+        )}
       </div>
       
       <div className="featured-section">

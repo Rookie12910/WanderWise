@@ -17,6 +17,7 @@ public interface TripPlanRepository extends JpaRepository<TripPlan, Long> {
     /**
      * Find all trip plans by user ID
      */
+    List<TripPlan> findAll();
     List<TripPlan> findByUserIdOrderByCreatedAtDesc(UUID userId);
     
     /**
