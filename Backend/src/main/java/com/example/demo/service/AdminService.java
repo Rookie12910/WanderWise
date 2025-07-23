@@ -2,13 +2,10 @@ package com.example.demo.service;
 
 import com.example.demo.Repository.FeaturedDestinationRepository;
 import com.example.demo.Repository.BlogPostRepository;
-import com.example.demo.Repository.TravelCitiesRepository;
 import com.example.demo.dto.CreateFeaturedDestinationRequest;
 import com.example.demo.dto.BlogPostDTO;
-import com.example.demo.dto.TravelCitiesDto;
 import com.example.demo.entity.FeaturedDestination;
 import com.example.demo.entity.BlogPost;
-import com.example.demo.entity.TravelCities;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -28,8 +25,6 @@ public class AdminService {
 
     @Autowired
     private AdminFileStorageService fileStorageService;
-    @Autowired
-    private TravelCitiesRepository travelCitiesRepository;
     @Autowired
     private BlogPostRepository blogPostRepository;
 
@@ -149,11 +144,5 @@ public class AdminService {
         }
         
         blogPostRepository.deleteById(id);
-    }
-    @Transactional
-    public void addCity(String city ){
-        TravelCities travelCities=TravelCities.builder()
-                .city(city).build();
-        travelCitiesRepository.save(travelCities);
     }
 }

@@ -35,6 +35,124 @@ const AdminDashboard = () => {
   const [imagePreview, setImagePreview] = useState(null);
   const [formErrors, setFormErrors] = useState({});
 
+  // State for travel data management (add spot section)
+  const [cityForm, setCityForm] = useState({ name: '', description: '' });
+  const [cities, setCities] = useState([]);
+  const [selectedCity, setSelectedCity] = useState(null);
+  const [spotForm, setSpotForm] = useState({ name: '', description: '', entry_fee: '', time_needed: '', best_time: '', lat: '', lon: '', image_url: '' });
+  const [spots, setSpots] = useState([]);
+  const [selectedSpot, setSelectedSpot] = useState(null);
+  const [hotelForm, setHotelForm] = useState({ name: '', price_min: '', price_max: '', rating: '', lat: '', lon: '', contact: '', image_url: '' });
+  const [hotels, setHotels] = useState([]);
+  const [restaurantForm, setRestaurantForm] = useState({ name: '', popular_dishes: '', avg_cost: '', lat: '', lon: '', image_url: '' });
+  const [restaurants, setRestaurants] = useState([]);
+  // Fetch cities when 'add spot' section is active
+  useEffect(() => {
+    const fetchCities = async () => {
+      try {
+        // Replace with your actual API call
+        const data = await adminApi.getAllCities();
+        setCities(data);
+      } catch (err) {
+        console.error('Error fetching cities:', err);
+      }
+    };
+    if (activeSection === 'add spot') {
+      fetchCities();
+    }
+  }, [activeSection]);
+
+  // Fetch spots when selectedCity changes
+  useEffect(() => {
+    const fetchSpots = async () => {
+      if (selectedCity) {
+        try {
+          const data = await adminApi.getSpots(selectedCity.id);
+          setSpots(data);
+        } catch (err) {
+          console.error('Error fetching spots:', err);
+        }
+      } else {
+        setSpots([]);
+      }
+      setSelectedSpot(null);
+      setHotels([]);
+      setRestaurants([]);
+    };
+    fetchSpots();
+  }, [selectedCity]);
+
+  // Fetch hotels and restaurants when selectedSpot changes
+  useEffect(() => {
+    const fetchHotelsAndRestaurants = async () => {
+      if (selectedSpot) {
+        try {
+          const hotelsData = await adminApi.getHotels(selectedSpot.id);
+          setHotels(hotelsData);
+        } catch (err) {
+          console.error('Error fetching hotels:', err);
+        }
+        try {
+          const restaurantsData = await adminApi.getRestaurants(selectedSpot.id);
+          setRestaurants(restaurantsData);
+        } catch (err) {
+          console.error('Error fetching restaurants:', err);
+        }
+      } else {
+        setHotels([]);
+        setRestaurants([]);
+      }
+    };
+    fetchHotelsAndRestaurants();
+  }, [selectedSpot]);
+  // Handler stubs for travel data management
+  // Handler implementations for travel data management
+  const handleAddCity = async (e) => {
+    e.preventDefault();
+    try {
+      const newCity = await adminApi.addCity(cityForm);
+      setCities([...cities, newCity]);
+      setCityForm({ name: '', description: '' });
+    } catch (err) {
+      console.error('Error adding city:', err);
+    }
+  };
+
+  const handleAddSpot = async (e) => {
+    e.preventDefault();
+    if (!selectedCity) return;
+    try {
+      const newSpot = await adminApi.addSpot(selectedCity.id, spotForm);
+      setSpots([...spots, newSpot]);
+      setSpotForm({ name: '', description: '', entry_fee: '', time_needed: '', best_time: '', lat: '', lon: '', image_url: '' });
+    } catch (err) {
+      console.error('Error adding spot:', err);
+    }
+  };
+
+  const handleAddHotel = async (e) => {
+    e.preventDefault();
+    if (!selectedSpot) return;
+    try {
+      const newHotel = await adminApi.addHotel(selectedSpot.id, hotelForm);
+      setHotels([...hotels, newHotel]);
+      setHotelForm({ name: '', price_min: '', price_max: '', rating: '', lat: '', lon: '', contact: '', image_url: '' });
+    } catch (err) {
+      console.error('Error adding hotel:', err);
+    }
+  };
+
+  const handleAddRestaurant = async (e) => {
+    e.preventDefault();
+    if (!selectedSpot) return;
+    try {
+      const newRestaurant = await adminApi.addRestaurant(selectedSpot.id, restaurantForm);
+      setRestaurants([...restaurants, newRestaurant]);
+      setRestaurantForm({ name: '', popular_dishes: '', avg_cost: '', lat: '', lon: '', image_url: '' });
+    } catch (err) {
+      console.error('Error adding restaurant:', err);
+    }
+  };
   useEffect(() => {
     if (activeSection === 'destinations') {
       fetchDestinations();
@@ -516,24 +634,97 @@ const AdminDashboard = () => {
         </div>
       )}
       {/* my addition */}
-       {activeSection === 'add spot' && (
+      {activeSection === 'add spot' && (
         <div className="section-content">
           <div className="section-header">
-            <h2>Get Travelled City</h2>
-            <button 
-              className="add-city-btn" 
-              onClick={() => handleData()}
-            >
-              Add city
-            </button>
-            <ul className='city-list'>  
-              {Object.entries(cityData).map(([name, count], index) => (
-                <li key={index}>
-                  <strong>{name}:</strong> {count}
-                </li>
-              ))}
-            </ul>
+            <h2>Travel Data Management</h2>
           </div>
+          {/* Add City */}
+          <form onSubmit={handleAddCity} className="travel-form">
+            <h3>Add City</h3>
+            <input type="text" placeholder="City Name" value={cityForm.name} onChange={e => setCityForm({ ...cityForm, name: e.target.value })} required />
+            <textarea placeholder="Description" value={cityForm.description} onChange={e => setCityForm({ ...cityForm, description: e.target.value })} required />
+            <button type="submit">Add City</button>
+          </form>
+          {/* List Cities */}
+          <h3>Cities</h3>
+          <ul>
+            {cities.map(city => (
+              <li key={city.id}>
+                <button onClick={() => setSelectedCity(city)}>{city.name}</button>
+              </li>
+            ))}
+          </ul>
+          {/* City details */}
+          {selectedCity && (
+            <div className="city-details">
+              <h4>City Details</h4>
+              <p><strong>Name:</strong> {selectedCity.name}</p>
+              <p><strong>Description:</strong> {selectedCity.description}</p>
+              {/* You can add more details here, e.g. spots, etc. */}
+            </div>
+          )}
+          {/* Spots for selected city */}
+          {selectedCity && (
+            <div>
+              <h3>Spots in {selectedCity.name}</h3>
+              <form onSubmit={handleAddSpot} className="travel-form">
+                <input type="text" placeholder="Spot Name" value={spotForm.name} onChange={e => setSpotForm({ ...spotForm, name: e.target.value })} required />
+                <textarea placeholder="Description" value={spotForm.description} onChange={e => setSpotForm({ ...spotForm, description: e.target.value })} required />
+                <input type="number" placeholder="Entry Fee" value={spotForm.entry_fee} onChange={e => setSpotForm({ ...spotForm, entry_fee: e.target.value })} />
+                <input type="number" placeholder="Time Needed (hrs)" value={spotForm.time_needed} onChange={e => setSpotForm({ ...spotForm, time_needed: e.target.value })} />
+                <input type="text" placeholder="Best Time" value={spotForm.best_time} onChange={e => setSpotForm({ ...spotForm, best_time: e.target.value })} />
+                <input type="number" step="any" placeholder="Latitude" value={spotForm.lat} onChange={e => setSpotForm({ ...spotForm, lat: e.target.value })} />
+                <input type="number" step="any" placeholder="Longitude" value={spotForm.lon} onChange={e => setSpotForm({ ...spotForm, lon: e.target.value })} />
+                <input type="text" placeholder="Image URL" value={spotForm.image_url} onChange={e => setSpotForm({ ...spotForm, image_url: e.target.value })} />
+                <button type="submit">Add Spot</button>
+              </form>
+              <ul>
+                {spots.map(spot => (
+                  <li key={spot.id}>
+                    <button onClick={() => setSelectedSpot(spot)}>{spot.name}</button>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
+          {/* Hotels and Restaurants for selected spot */}
+          {selectedSpot && (
+            <div>
+              <h3>Hotels for {selectedSpot.name}</h3>
+              <form onSubmit={handleAddHotel} className="travel-form">
+                <input type="text" placeholder="Hotel Name" value={hotelForm.name} onChange={e => setHotelForm({ ...hotelForm, name: e.target.value })} required />
+                <input type="number" placeholder="Price Min" value={hotelForm.price_min} onChange={e => setHotelForm({ ...hotelForm, price_min: e.target.value })} />
+                <input type="number" placeholder="Price Max" value={hotelForm.price_max} onChange={e => setHotelForm({ ...hotelForm, price_max: e.target.value })} />
+                <input type="number" step="any" placeholder="Rating" value={hotelForm.rating} onChange={e => setHotelForm({ ...hotelForm, rating: e.target.value })} />
+                <input type="number" step="any" placeholder="Latitude" value={hotelForm.lat} onChange={e => setHotelForm({ ...hotelForm, lat: e.target.value })} />
+                <input type="number" step="any" placeholder="Longitude" value={hotelForm.lon} onChange={e => setHotelForm({ ...hotelForm, lon: e.target.value })} />
+                <input type="text" placeholder="Contact" value={hotelForm.contact} onChange={e => setHotelForm({ ...hotelForm, contact: e.target.value })} />
+                <input type="text" placeholder="Image URL" value={hotelForm.image_url} onChange={e => setHotelForm({ ...hotelForm, image_url: e.target.value })} />
+                <button type="submit">Add Hotel</button>
+              </form>
+              <ul>
+                {hotels.map(hotel => (
+                  <li key={hotel.id}>{hotel.name}</li>
+                ))}
+              </ul>
+              <h3>Restaurants for {selectedSpot.name}</h3>
+              <form onSubmit={handleAddRestaurant} className="travel-form">
+                <input type="text" placeholder="Restaurant Name" value={restaurantForm.name} onChange={e => setRestaurantForm({ ...restaurantForm, name: e.target.value })} required />
+                <input type="text" placeholder="Popular Dishes" value={restaurantForm.popular_dishes} onChange={e => setRestaurantForm({ ...restaurantForm, popular_dishes: e.target.value })} />
+                <input type="number" placeholder="Avg Cost" value={restaurantForm.avg_cost} onChange={e => setRestaurantForm({ ...restaurantForm, avg_cost: e.target.value })} />
+                <input type="number" step="any" placeholder="Latitude" value={restaurantForm.lat} onChange={e => setRestaurantForm({ ...restaurantForm, lat: e.target.value })} />
+                <input type="number" step="any" placeholder="Longitude" value={restaurantForm.lon} onChange={e => setRestaurantForm({ ...restaurantForm, lon: e.target.value })} />
+                <input type="text" placeholder="Image URL" value={restaurantForm.image_url} onChange={e => setRestaurantForm({ ...restaurantForm, image_url: e.target.value })} />
+                <button type="submit">Add Restaurant</button>
+              </form>
+              <ul>
+                {restaurants.map(rest => (
+                  <li key={rest.id}>{rest.name}</li>
+                ))}
+              </ul>
+            </div>
+          )}
         </div>
       )}
     </div>

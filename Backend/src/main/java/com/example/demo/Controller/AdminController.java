@@ -191,29 +191,29 @@ public class AdminController {
         }
     }
 
-    @PostMapping("addcity")
-    public ResponseEntity<?> addCity(@AuthenticationPrincipal User user, @RequestBody String request)
-    {
-        if (!"ADMIN".equals(user.getRole())) {
-            return ResponseEntity.status(HttpStatus.FORBIDDEN)
-                    .body(Map.of("message", "Only admin users can perform this action"));
-        }
-        try {
-//            String name=String.valueOf(request.get("acitivity"));
-            System.out.println(request);
-            adminService.addCity(request);
-            Map<String, String> response = new HashMap<>();
-            response.put("message", "City added successfully");
-            return ResponseEntity.ok(response);
-        } catch (RuntimeException e) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                    .body(Map.of("message", e.getMessage()));
-        }
-    }
-    @GetMapping("getHits")
-    public ResponseEntity<?> getCityByVisit(){
-        HashMap<String,Integer>res=tripPlanService.getCityCount();
-        System.out.println(res);
-        return ResponseEntity.ok(res);
-    }
+//    @PostMapping("addcity")
+//    public ResponseEntity<?> addCity(@AuthenticationPrincipal User user, @RequestBody String request)
+//    {
+//        if (!"ADMIN".equals(user.getRole())) {
+//            return ResponseEntity.status(HttpStatus.FORBIDDEN)
+//                    .body(Map.of("message", "Only admin users can perform this action"));
+//        }
+//        try {
+////            String name=String.valueOf(request.get("acitivity"));
+//            System.out.println(request);
+//            adminService.addCity(request);
+//            Map<String, String> response = new HashMap<>();
+//            response.put("message", "City added successfully");
+//            return ResponseEntity.ok(response);
+//        } catch (RuntimeException e) {
+//            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+//                    .body(Map.of("message", e.getMessage()));
+//        }
+//    }
+//    @GetMapping("getHits")
+//    public ResponseEntity<?> getCityByVisit(){
+//        HashMap<String,Integer>res=tripPlanService.getCityCount();
+//        System.out.println(res);
+//        return ResponseEntity.ok(res);
+//    }
 }

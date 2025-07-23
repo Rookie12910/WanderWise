@@ -11,16 +11,17 @@ import lombok.NoArgsConstructor;
 @Builder
 @Data
 @Entity
-@Table(name="travel_cities")
-public class TravelCities {
+@Table(name = "travel_cities")
+public class TravelCity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    private Integer id;
 
-    @Column(name="name",nullable = false)
-    private String city;
+    @Column(nullable = false, length = 100)
+    private String name;
 
-    @Column(name="description",columnDefinition = "TEXT")
+    @Column(columnDefinition = "TEXT")
     private String description;
 
+    // Getters and setters
 }

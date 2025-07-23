@@ -348,14 +348,91 @@ export const adminApi = {
         }
     },
 
+    // Travel Data Management APIs
+    // Get all cities
+    getAllCities: async () => {
+        try {
+            const response = await api.get('/api/admin/travel/cities');
+            return response.data;
+        } catch (error) {
+            console.error('Error fetching cities:', error);
+            throw error;
+        }
+    },
+
+    // Add a city
     addCity: async (cityData) => {
         try {
-            console.log('API: Adding city with data:', cityData);
-            const response = await api.get('/api/admin/getHits');
-            console.log(response.data);
+            const response = await api.post('/api/admin/travel/cities', cityData);
             return response.data;
         } catch (error) {
             console.error('Error adding city:', error);
+            throw error;
+        }
+    },
+
+    // Get all spots for a city
+    getSpots: async (cityId) => {
+        try {
+            const response = await api.get(`/api/admin/travel/cities/${cityId}/spots`);
+            return response.data;
+        } catch (error) {
+            console.error('Error fetching spots:', error);
+            throw error;
+        }
+    },
+
+    // Add a spot to a city
+    addSpot: async (cityId, spotData) => {
+        try {
+            const response = await api.post(`/api/admin/travel/cities/${cityId}/spots`, spotData);
+            return response.data;
+        } catch (error) {
+            console.error('Error adding spot:', error);
+            throw error;
+        }
+    },
+
+    // Get all hotels for a spot
+    getHotels: async (spotId) => {
+        try {
+            const response = await api.get(`/api/admin/travel/spots/${spotId}/hotels`);
+            return response.data;
+        } catch (error) {
+            console.error('Error fetching hotels:', error);
+            throw error;
+        }
+    },
+
+    // Add a hotel to a spot
+    addHotel: async (spotId, hotelData) => {
+        try {
+            const response = await api.post(`/api/admin/travel/spots/${spotId}/hotels`, hotelData);
+            return response.data;
+        } catch (error) {
+            console.error('Error adding hotel:', error);
+            throw error;
+        }
+    },
+
+    // Get all restaurants for a spot
+    getRestaurants: async (spotId) => {
+        try {
+            const response = await api.get(`/api/admin/travel/spots/${spotId}/restaurants`);
+            return response.data;
+        } catch (error) {
+            console.error('Error fetching restaurants:', error);
+            throw error;
+        }
+    },
+
+    // Add a restaurant to a spot
+    addRestaurant: async (spotId, restaurantData) => {
+        try {
+            const response = await api.post(`/api/admin/travel/spots/${spotId}/restaurants`, restaurantData);
+            return response.data;
+        } catch (error) {
+            console.error('Error adding restaurant:', error);
             throw error;
         }
     },
