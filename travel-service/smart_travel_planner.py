@@ -177,6 +177,7 @@ Generate a comprehensive JSON travel plan using ALL the provided spots, hotels, 
     "duration": {day_count},
     "total_budget": {budget}
   }},
+
   "daily_itinerary": [
     {{
       "day": 1,
@@ -335,7 +336,7 @@ Available images: jaflong.jpg, ratargul.jpg, lalakhal.jpg, sajek_valley.jpg, kap
                 {"role": "system", "content": "You are a professional travel planning assistant that creates detailed itineraries in valid JSON format. Always return properly formatted JSON without any markdown or explanations."},
                 {"role": "user", "content": prompt}
             ],
-            max_tokens=3000,  # Increased for comprehensive plans
+            max_tokens=4000,  # Increased for comprehensive plans
             temperature=0.7,
             response_format={ "type": "json_object" }  # Ensures JSON output
         )

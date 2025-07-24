@@ -14,7 +14,7 @@ sys.path.append(os.path.dirname(__file__))
 
 try:
     from weather_agent import get_weather
-    from smart_travel_planner import generate_trip_plan, customize_trip_plan
+    from gemini_travel_planner import generate_trip_plan, customize_trip_plan
 except ImportError as e:
     print(f"Import error: {e}")
     print("Make sure all agent files are in the travel-service directory")
@@ -173,6 +173,16 @@ def plan_trip():
         
         if response['trip_plan']:
             print(f"📋 Trip Plan Keys: {list(response['trip_plan'].keys())}")
+            
+            # Print pre-trip transportation details if available
+            if 'pre_trip_transportation' in response['trip_plan']:
+                pre_trip = response['trip_plan']['pre_trip_transportation']
+                print(f"🚌 Pre-Trip Transportation: {pre_trip.get('departure_location')} → {pre_trip.get('arrival_location')}")
+                print(f"📅 Departure Date: {pre_trip.get('departure_date')}")
+                if 'options' in pre_trip and pre_trip['options']:
+                    for i, option in enumerate(pre_trip['options']):
+                        print(f"  🚍 Option {i+1}: {option.get('mode')} by {option.get('operator')} - ৳{option.get('cost')}")
+            
             if 'daily_itinerary' in response['trip_plan']:
                 itinerary = response['trip_plan']['daily_itinerary']
                 print(f"📆 Days in Itinerary: {len(itinerary)}")
@@ -346,6 +356,16 @@ def customize_trip():
         
         if response['trip_plan']:
             print(f"📋 Customized Trip Plan Keys: {list(response['trip_plan'].keys())}")
+            
+            # Print pre-trip transportation details if available
+            if 'pre_trip_transportation' in response['trip_plan']:
+                pre_trip = response['trip_plan']['pre_trip_transportation']
+                print(f"🚌 Pre-Trip Transportation: {pre_trip.get('departure_location')} → {pre_trip.get('arrival_location')}")
+                print(f"📅 Departure Date: {pre_trip.get('departure_date')}")
+                if 'options' in pre_trip and pre_trip['options']:
+                    for i, option in enumerate(pre_trip['options']):
+                        print(f"  🚍 Option {i+1}: {option.get('mode')} by {option.get('operator')} - ৳{option.get('cost')}")
+            
             if 'daily_itinerary' in response['trip_plan']:
                 itinerary = response['trip_plan']['daily_itinerary']
                 print(f"📆 Days in Customized Itinerary: {len(itinerary)}")
@@ -417,6 +437,43 @@ def enhance_trip_plan_with_images(trip_plan):
             filename += '.jpg'
             
         return "/trip-images/" + filename
+    
+    # Enhance pre-trip transportation options if available
+    if 'pre_trip_transportation' in trip_plan and 'options' in trip_plan['pre_trip_transportation']:
+        for option in trip_plan['pre_trip_transportation']['options']:
+            if 'image_url' in option:
+                option['image_url'] = extract_filename_from_url(option['image_url'], 'transport')
+    else:
+        # If pre-trip transportation is missing, add default options
+        trip_plan['pre_trip_transportation'] = {
+            "departure_location": trip_plan.get('trip_summary', {}).get('origin', 'Dhaka'),
+            "arrival_location": trip_plan.get('trip_summary', {}).get('destination', 'Sylhet'),
+            "departure_date": "Day before trip start",
+            "options": [
+                {
+                    "mode": "bus",
+                    "operator": "Hanif Enterprise",
+                    "departure_time": "10:00 PM",
+                    "arrival_time": "5:00 AM",
+                    "duration": "7 hours",
+                    "cost": 1200,
+                    "amenities": "AC, Reclining Seats, WiFi",
+                    "booking_info": "Counter at Kalyanpur Bus Terminal",
+                    "image_url": "/trip-images/bus.jpg"
+                },
+                {
+                    "mode": "train",
+                    "operator": "Bangladesh Railway",
+                    "departure_time": "8:00 PM",
+                    "arrival_time": "4:30 AM",
+                    "duration": "8.5 hours",
+                    "cost": 1500,
+                    "amenities": "AC Sleeper, Food Service",
+                    "booking_info": "Railway Station or online at railway.gov.bd",
+                    "image_url": "/trip-images/train.jpg"
+                }
+            ]
+        }
     
     # Enhance each day's itinerary
     for day in trip_plan.get('daily_itinerary', []):
