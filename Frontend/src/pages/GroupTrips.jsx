@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import GroupTripManager from '../components/GroupTripManager';
 import GroupTripBrowser from '../components/GroupTripBrowser';
-import './GroupTrips.css';
+import '../styles/GroupTrips.css';
 
 const GroupTrips = () => {
     const [activeTab, setActiveTab] = useState('browse'); // 'browse' or 'manage'
