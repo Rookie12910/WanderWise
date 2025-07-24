@@ -119,7 +119,11 @@ const CreateTrip = () => {
         }
       } else if (err.request) {
         // Network error
-        setError('Network error. Please check your connection and try again.');
+        if (err.code === 'ECONNABORTED') {
+          setError('The trip planning is taking longer than expected. Please try again with a simpler trip plan or fewer days.');
+        } else {
+          setError('Network error. Please check your connection and try again.');
+        }
       } else {
         // Other error
         setError('An unexpected error occurred. Please try again.');

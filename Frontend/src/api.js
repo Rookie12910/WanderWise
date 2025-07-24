@@ -2,7 +2,7 @@ import axios from 'axios';
 
 // Create a dedicated Axios instance
 const api = axios.create({
-    timeout: 30000, // 30 seconds timeout for group trip operations
+    timeout: 90000, // 90 seconds timeout for AI trip planning operations
 });
 
 // ---- Request Interceptor ----
