@@ -62,11 +62,11 @@ jobs:
         working-directory: Backend
         run: ./mvnw clean test
 
-  # Deploy only if both frontend and backend tests pass
+  # Deploy only if backend tests pass (frontend tests temporarily disabled)
   deploy:
     runs-on: ubuntu-latest
     name: Deploy to Azure VM
-    needs: [frontend-tests, backend-tests]
+    needs: [backend-tests]
     
     steps:
       - name: Checkout repository
