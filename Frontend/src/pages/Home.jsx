@@ -3,11 +3,11 @@ import { useNavigate } from 'react-router-dom';
 import AuthContext from '../context/AuthContext';
 import api, { blogApi } from '../api';
 import { FaStar } from 'react-icons/fa';
-import NotificationCenter from '../components/NotificationCenter';
+import Navbar from '../components/Navbar';
 import '../styles/home.css';
 
 const Home = () => {
-  const { currentUser, logout } = useContext(AuthContext);
+  const { currentUser } = useContext(AuthContext);
   const navigate = useNavigate();
   const [featuredDestinations, setFeaturedDestinations] = useState([]);
   const [blogPosts, setBlogPosts] = useState([]); 
@@ -24,12 +24,12 @@ const Home = () => {
         setIsLoading(true);
         setError(null);
         const response = await api.get('/api/destinations/featured');
-        setFeaturedDestinations(response.data || []); // Ensure it's always an array
+        setFeaturedDestinations(response.data || []); 
         setIsLoading(false);
       } catch (err) {
         console.error('Error fetching featured destinations:', err);
         setError('Failed to load featured destinations. Please try again later.');
-        setFeaturedDestinations([]); // Ensure it's an empty array on error
+        setFeaturedDestinations([]);
         setIsLoading(false);
       }
     };
@@ -39,33 +39,20 @@ const Home = () => {
         setIsLoadingBlogs(true);
         setBlogError(null);
         const response = await blogApi.getAllBlogPosts();
-        setBlogPosts(Array.isArray(response) ? response : []); // Ensure it's always an array
+        setBlogPosts(Array.isArray(response) ? response : []); 
         console.log(`Fetched ${response ? response.length : 0} blog posts`);
         setIsLoadingBlogs(false);
       } catch (err) {
         console.error('Error fetching blog posts:', err);
         setBlogError('Failed to load blog posts. Please try again later.');
-        setBlogPosts([]); // Ensure it's an empty array on error
+        setBlogPosts([]);
         setIsLoadingBlogs(false);
       }
     };
 
     fetchFeaturedDestinations();
-    fetchBlogPosts(); // Fetch blog posts
+    fetchBlogPosts();
   }, []);
-
-  const handleLogout = async () => {
-    try {
-      await logout();
-      navigate('/auth/login');
-    } catch (error) {
-      console.error('Failed to log out', error);
-    }
-  };
-
-  const handleLogin = () => {
-    navigate('/auth/login');
-  };
 
   const navigateToCreateTrip = () => {
     navigate('/create-trip');
@@ -94,30 +81,8 @@ const Home = () => {
 
   return (
     <div className="home-container">
-      <nav className="navbar">
-        <div className="logo">WanderWise</div>
-        {effectiveUser ? (
-          <div className="action-buttons">
-            <NotificationCenter />
-            {effectiveUser.role === 'ADMIN' ? (
-              <button onClick={() => navigate('/admin')} className="btn-outline admin-btn">Admin Dashboard</button>
-            ) : (
-              <>
-                <button onClick={navigateToCreateBlog} className="btn-outline">Write Blog</button>
-                <button onClick={() => navigate('/my-trips')} className="btn-outline nav-btn">My Trips</button>
-                <button onClick={() => navigate('/group-trips')} className="btn-outline nav-btn">Group Trips</button>
-                <button onClick={() => navigate('/profile')} className="btn-outline">Profile</button>
-              </>
-            )}
-            <button onClick={handleLogout} className="btn-outline">Logout</button>
-          </div>
-        ) : (
-          <div className="nav-buttons">
-            <button onClick={handleLogin} className="btn-outline">Login</button>
-          </div>
-        )}
-      </nav>
-
+      <Navbar />
+      
       <div className="welcome-section">
         {effectiveUser ? (
           <h1>Welcome, {effectiveUser.username || effectiveUser.email}!</h1>
@@ -125,7 +90,11 @@ const Home = () => {
           <h1>Welcome to WanderWise!</h1>
         )}
         <p>Discover amazing destinations and plan your perfect trip.</p>
-        {(!effectiveUser || effectiveUser.role !== 'ADMIN') && (
+        {effectiveUser && effectiveUser.role === 'ADMIN' ? (
+          <div className="action-buttons">
+            <button className="btn-primary" onClick={() => navigate('/admin')}>Admin Dashboard</button>
+          </div>
+        ) : effectiveUser && (
           <div className="action-buttons">
             <button className="btn-primary" onClick={navigateToCreateTrip}>Create New Trip</button>
             <button className="btn-secondary" onClick={navigateToMyTrips}>View My Trips</button>
@@ -134,6 +103,7 @@ const Home = () => {
         )}
       </div>
       
+      {/* Rest of your existing Home component content remains the same */}
       <div className="featured-section">
         <h2>Featured Destinations</h2>
         
@@ -229,7 +199,6 @@ const Home = () => {
                       </div>
                     )}
                     
-                    {/* Add interaction stats */}
                     <div className="blog-stats">
                       <span className="stat-item">
                         <span className="stat-icon">❤️</span>

@@ -40,7 +40,14 @@
 }
 
 .profile-view {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
     text-align: center;
+}
+
+.profile-picture {
+    margin-bottom: 20px;
 }
 
 .profile-picture img {
@@ -48,27 +55,48 @@
     height: 150px;
     border-radius: 50%;
     object-fit: cover;
-    margin-bottom: 20px;
     border: 4px solid #e7e7e7;
+    display: block; /* Ensure image is block level */
+}
+
+.profile-info {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    margin-bottom: 30px;
+    width: 100%;
 }
 
 .profile-info h2 {
-    margin: 0;
+    margin: 0 0 10px 0;
     font-size: 28px;
+    font-weight: 600;
+    color: #333;
+    display: block;
+    width: 100%;
 }
 
 .profile-info p {
     color: #666;
-    margin: 5px 0;
+    margin: 8px 0;
+    font-size: 16px;
+    display: block;
+    width: 100%;
+    line-height: 1.5;
 }
 
 .profile-info .bio {
     margin-top: 15px;
     font-style: italic;
+    color: #555;
+    max-width: 500px;
+    text-align: center;
 }
 
 .profile-view .btn-primary {
     margin-top: 20px;
+    align-self: center;
 }
 
 .profile-form .form-row {
@@ -94,6 +122,7 @@
     padding: 10px;
     border-radius: 4px;
     border: 1px solid #ccc;
+    box-sizing: border-box;
 }
 
 .form-actions {
@@ -101,4 +130,91 @@
     justify-content: flex-end;
     gap: 10px;
     margin-top: 20px;
+}
+
+.btn-primary {
+    background-color: #4a80f0;
+    color: white;
+    padding: 12px 24px;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: 500;
+    transition: background-color 0.3s ease;
+}
+
+.btn-primary:hover {
+    background-color: #3d6bc7;
+}
+
+.btn-outline {
+    background: transparent;
+    color: #4a80f0;
+    padding: 12px 24px;
+    border: 2px solid #4a80f0;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: 500;
+    transition: all 0.3s ease;
+}
+
+.btn-outline:hover {
+    background-color: #4a80f0;
+    color: white;
+}
+
+.error-message {
+    background-color: #ffe6e6;
+    color: #d00;
+    padding: 10px;
+    border-radius: 4px;
+    margin-bottom: 15px;
+    border: 1px solid #ffb3b3;
+}
+
+.success-message {
+    background-color: #e6ffe6;
+    color: #006600;
+    padding: 10px;
+    border-radius: 4px;
+    margin-bottom: 15px;
+    border: 1px solid #b3ffb3;
+}
+
+.loading-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 50vh;
+    font-size: 18px;
+    color: #666;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .profile-card {
+        padding: 20px;
+        margin: 0 10px;
+    }
+    
+    .page-header {
+        padding: 15px 20px;
+        flex-direction: column;
+        gap: 15px;
+    }
+    
+    .profile-form .form-row {
+        flex-direction: column;
+        gap: 15px;
+    }
+    
+    .form-actions {
+        flex-direction: column;
+        gap: 10px;
+    }
+    
+    .btn-primary, .btn-outline {
+        width: 100%;
+        text-align: center;
+    }
 }

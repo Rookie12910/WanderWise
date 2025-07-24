@@ -17,20 +17,7 @@
   z-index: 0;
 }
 
-.navbar {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 20px 40px;
-  position: relative;
-  z-index: 1;
-}
 
-.logo {
-  font-size: 24px;
-  font-weight: 700;
-  color: #f6f1f1;
-}
 
 .welcome-section {
   display: flex;
@@ -435,3 +422,4 @@
     justify-content: center;
   }
 }
+
