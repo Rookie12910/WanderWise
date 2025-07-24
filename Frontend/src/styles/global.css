@@ -1,5 +1,27 @@
 @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
 
+:root {
+  --primary-color: #4a80f0;
+  --primary-dark: #3266d3;
+  --primary-light: #e0edff;
+  --secondary-color: #45a049;
+  --secondary-dark: #3d8b3d;
+  --text-dark: #222;
+  --text-medium: #555;
+  --text-light: #888;
+  --bg-light: #f8f9fa;
+  --bg-medium: #f0f4f8;
+  --border-light: #e1e8ed;
+  --border-medium: #ddd;
+  --shadow-sm: 0 2px 5px rgba(0, 0, 0, 0.1);
+  --shadow-md: 0 5px 15px rgba(0, 0, 0, 0.1);
+  --shadow-lg: 0 10px 25px rgba(0, 0, 0, 0.15);
+  --radius-sm: 4px;
+  --radius-md: 8px;
+  --radius-lg: 16px;
+  --radius-full: 50px;
+}
+
 * {
   margin: 0;
   padding: 0;
@@ -9,7 +31,8 @@
 body {
   font-family: 'Poppins', sans-serif;
   line-height: 1.6;
-  color: #333;
+  color: var(--text-dark);
+  background-color: var(--bg-light);
 }
 
 /* Global input field styling - this will fix all input fields */
@@ -22,13 +45,16 @@ input[type="file"],
 select,
 textarea {
   background-color: white !important;
-  color: #333 !important;
-  border: 1px solid #ddd !important;
-  padding: 10px 12px !important;
-  border-radius: 5px !important;
+  color: var(--text-dark) !important;
+  border: 1px solid var(--border-medium) !important;
+  padding: 12px 16px !important;
+  border-radius: var(--radius-md) !important;
   font-size: 16px !important;
   font-family: 'Poppins', sans-serif !important;
   box-sizing: border-box !important;
+  transition: all 0.3s ease !important;
+  box-shadow: var(--shadow-sm) !important;
+  width: 100% !important;
 }
 
 input[type="text"]:focus,
@@ -39,25 +65,29 @@ input[type="date"]:focus,
 select:focus,
 textarea:focus {
   outline: none !important;
-  border-color: #4a80f0 !important;
+  border-color: var(--primary-color) !important;
   background-color: white !important;
-  color: #333 !important;
-  box-shadow: 0 0 0 2px rgba(74, 128, 240, 0.2) !important;
+  color: var(--text-dark) !important;
+  box-shadow: 0 0 0 3px rgba(74, 128, 240, 0.2) !important;
+  transform: translateY(-1px) !important;
 }
 
 input::placeholder,
 textarea::placeholder {
-  color: #999 !important;
-  opacity: 1 !important;
+  color: var(--text-light) !important;
+  opacity: 0.8 !important;
+  font-style: italic !important;
 }
 
 /* Ensure disabled inputs are also visible */
 input:disabled,
 select:disabled,
 textarea:disabled {
-  background-color: #f5f5f5 !important;
-  color: #666 !important;
+  background-color: var(--bg-medium) !important;
+  color: var(--text-medium) !important;
   cursor: not-allowed !important;
+  opacity: 0.8 !important;
+  box-shadow: none !important;
 }
 
 .btn-primary {

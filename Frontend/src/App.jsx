@@ -20,6 +20,7 @@ import GroupTrips from './pages/GroupTrips';
 import CheckList from './pages/CheckList'; // Import CheckList
 import MyBlogs from './pages/MyBlogs';
 import './styles/global.css';
+import './styles/buttons.css'; // Import global button styles
 
 function App() {
   return (
