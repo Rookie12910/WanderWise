@@ -4,6 +4,13 @@
     align-items: center;
     background-color: #f4f7f6;
     min-height: 100vh;
+    position: relative;
+}
+
+/* Override navbar style for profile page */
+.profile-page .navbar {
+    width: 100%;
+    backdrop-filter: none;
 }
 
 .page-header {

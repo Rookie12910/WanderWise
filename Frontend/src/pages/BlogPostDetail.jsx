@@ -104,20 +104,6 @@ const BlogPostDetail = () => {
           <button onClick={() => navigate('/')} className="back-button">
             ← Back to Home
           </button>
-          {isAuthor && (
-            <div className="author-actions">
-              <button onClick={handleEdit} className="btn-outline edit-btn">
-                ✏️ Edit
-              </button>
-              <button 
-                onClick={handleDelete} 
-                className="btn-outline delete-btn"
-                disabled={deleteLoading}
-              >
-                {deleteLoading ? '🗑️ Deleting...' : '🗑️ Delete'}
-              </button>
-            </div>
-          )}
         </div>
         <h1>{blogPost.title}</h1>
         <p className="blog-meta">
@@ -139,8 +125,23 @@ const BlogPostDetail = () => {
         <div className="blog-content">
           <p>{blogPost.content}</p>
         </div>
+        <BlogInteractions blogPost={blogPost} />
+        
+        {isAuthor && (
+          <div className="author-actions-bottom">
+            <button onClick={handleEdit} className="edit-btn">
+              ✏️ Edit Post
+            </button>
+            <button 
+              onClick={handleDelete} 
+              className="delete-btn"
+              disabled={deleteLoading}
+            >
+              {deleteLoading ? '⏳ Deleting...' : '🗑️ Delete Post'}
+            </button>
+          </div>
+        )}
       </div>
-      <BlogInteractions blogPost={blogPost} />
     </div>
   );
 };

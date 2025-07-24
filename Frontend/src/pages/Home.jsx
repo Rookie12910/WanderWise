@@ -133,11 +133,6 @@ const Home = () => {
                     <h3>{destination.title}</h3>
                     <p className="destination-location">{destination.destination}</p>
                     <div className="destination-meta">
-                      <span className="destination-days">{destination.days} days</span>
-                      <div className="destination-rating">
-                        <FaStar className="star-icon" />
-                        <span>{destination.avgRating.toFixed(1)}</span>
-                      </div>
                     </div>
                     <p className="destination-description">{destination.description.substring(0, 100)}...</p>
                     <button 
@@ -217,16 +212,7 @@ const Home = () => {
                       >
                         Read More
                       </button>
-                      {effectiveUser && (effectiveUser.id === post.userId || effectiveUser.email === post.userEmail) && (
-                        <div className="author-actions-small">
-                          <button 
-                            className="btn-outline edit-btn-small"
-                            onClick={(e) => { e.stopPropagation(); navigate(`/blog/edit/${post.id}`); }}
-                          >
-                            Edit
-                          </button>
-                        </div>
-                      )}
+                      
                     </div>
                   </div>
                 </div>
