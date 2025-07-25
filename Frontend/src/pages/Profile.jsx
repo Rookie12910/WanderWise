@@ -146,7 +146,7 @@ const Profile = () => {
                                 />
                             </div>
                             <div className="form-actions">
-                                <button type="button" onClick={() => setIsEditing(false)} className="btn-outline">Cancel</button>
+                                <button type="button" onClick={() => setIsEditing(false)} className="cancel-btn">Cancel</button>
                                 <button type="submit" className="btn-primary">Save Changes</button>
                             </div>
                         </form>
@@ -170,7 +170,7 @@ const Profile = () => {
                                 <p>{currentUser?.email}</p>
                                 <p className="bio">{profile.bio || 'No bio yet.'}</p>
                             </div>
-                            <button onClick={() => setIsEditing(true)} className="btn-primary">Edit Profile</button>
+                            <button onClick={() => setIsEditing(true)} className="edit-btn">Edit Profile</button>
                         </div>
                     )}
                 </div>

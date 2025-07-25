@@ -254,7 +254,7 @@ const MyTrips = () => {
       <div className="content-container">
         <div className="trips-header">
           <h1>My Accepted Trips</h1>
-          <button onClick={() => navigate('/travel-planner')} className="btn-primary">
+          <button onClick={() => navigate('/create-trip')} className="btn-primary">
             Plan New Trip
           </button>
         </div>
@@ -315,7 +315,7 @@ const MyTrips = () => {
                   ) : (
                     <div className="empty-section">
                       <p>No upcoming tours planned.</p>
-                      <button onClick={() => navigate('/travel-planner')} className="btn-primary">
+                      <button onClick={() => navigate('/create-trip')} className="btn-primary">
                         Plan Your Next Trip
                       </button>
                     </div>
