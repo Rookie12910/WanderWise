@@ -376,56 +376,6 @@ const AdminDashboard = () => {
             {/* Add more stat cards as needed */}
           </div>
           
-          <div className="admin-actions">
-            <h3>Administrative Actions</h3>
-            <div className="admin-action-buttons">
-              <button 
-                className="admin-action-btn" 
-                onClick={async () => {
-                  try {
-                    setUpdateStatusLoading(true);
-                    const response = await tripApi.triggerAutoStatusUpdate();
-                    console.log('Trip status update response:', response);
-                    
-                    // Show more detailed success message
-                    if (response.success) {
-                      showNotification(`Trip statuses updated successfully! Check the server logs for details.`, 'success');
-                    } else {
-                      showNotification(`Update completed but returned unexpected response: ${JSON.stringify(response)}`, 'warning');
-                    }
-                  } catch (err) {
-                    console.error('Error updating trip statuses:', err);
-                    
-                    // More detailed error message
-                    const errorMsg = err.response?.data?.error || err.message || 'Unknown error';
-                    const statusCode = err.response?.status;
-                    
-                    if (statusCode === 403) {
-                      showNotification(`Permission denied: ${errorMsg}. Admin privileges required.`, 'error');
-                    } else if (statusCode === 401) {
-                      showNotification('Authentication error. Please log in again.', 'error');
-                    } else {
-                      showNotification(`Failed to update trip statuses: ${errorMsg}`, 'error');
-                    }
-                  } finally {
-                    setUpdateStatusLoading(false);
-                  }
-                }}
-                disabled={updateStatusLoading}
-              >
-                {updateStatusLoading ? 'Updating...' : 'Update Trip Statuses'}
-              </button>
-              {/* Add more admin action buttons as needed */}
-            </div>
-            <div className="admin-action-info">
-              <p><strong>Update Trip Statuses:</strong> This will check all trips and automatically:</p>
-              <ul>
-                <li>Change trips from "upcoming" to "running" if the start date has passed but the trip is still ongoing</li>
-                <li>Change trips from "running" to "completed" if the end date has passed</li>
-              </ul>
-              <p><em>Note: Trips must have proper start date and duration information stored in their JSON data.</em></p>
-            </div>
-          </div>
         </div>
       )}
 
