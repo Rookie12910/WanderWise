@@ -484,8 +484,7 @@ export const adminApi = {
             throw error;
         }
     },
-
-    // Get all blog postss (admin view)
+     // Get all blog postss (admin view)
     getAllBlogPosts: async () => {
         try {
             const response = await api.get('/api/admin/blogs');
@@ -535,10 +534,12 @@ export const blogApi = {
     getAllBlogPosts: async () => {
         try {
             const response = await api.get('/api/blogs');
+            
             if (response.data && Array.isArray(response.data)) {
                 console.log("Retrieved blog posts successfully:", response.data.length);
                 return response.data;
             } else if (response.data && Array.isArray(response.data.content)) {
+                // Handle Spring pagination format if present
                 return response.data.content;
             } else {
                 console.warn('Unexpected response format from blog API');
@@ -559,8 +560,69 @@ export const blogApi = {
             throw error;
         }
     },
-    
-    // Optional: Add update and delete if needed for the frontend
+     toggleLike: async (blogId) => {
+        try {
+            const response = await api.post(`/api/blogs/${blogId}/interactions/like`);
+            return response.data;
+        } catch (error) {
+            console.error('Error toggling like:', error);
+            throw error;
+        }
+    },
+
+    getBlogLikes: async (blogId) => {
+        try {
+            const response = await api.get(`/api/blogs/${blogId}/interactions/likes`);
+            return response.data;
+        } catch (error) {
+            console.error('Error fetching likes:', error);
+            throw error;
+        }
+    },
+
+    // Comment functionality
+    addComment: async (blogId, commentData) => {
+        try {
+            const response = await api.post(`/api/blogs/${blogId}/interactions/comments`, commentData);
+            return response.data;
+        } catch (error) {
+            console.error('Error adding comment:', error);
+            throw error;
+        }
+    },
+
+    getBlogComments: async (blogId) => {
+        try {
+            const response = await api.get(`/api/blogs/${blogId}/interactions/comments`);
+            return response.data;
+        } catch (error) {
+            console.error('Error fetching comments:', error);
+            throw error;
+        }
+    },
+
+    updateComment: async (blogId, commentId, content) => {
+        try {
+            const response = await api.put(`/api/blogs/${blogId}/interactions/comments/${commentId}`, {
+                content: content
+            });
+            return response.data;
+        } catch (error) {
+            console.error('Error updating comment:', error);
+            throw error;
+        }
+    },
+
+    deleteComment: async (blogId, commentId) => {
+        try {
+            const response = await api.delete(`/api/blogs/${blogId}/interactions/comments/${commentId}`);
+            return response.data;
+        } catch (error) {
+            console.error('Error deleting comment:', error);
+            throw error;
+        }
+    },
+
     updateBlogPost: async (id, blogPostData, imageFile) => {
         try {
             const formData = new FormData();
