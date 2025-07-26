@@ -39,7 +39,7 @@ public class TravelSpot {
     private Double lat;
     private Double lon;
 
-    @Column(columnDefinition = "TEXT")
+    @Column(name = "image_url", columnDefinition = "TEXT")
     private String imageUrl;
 
     // Getters and setters

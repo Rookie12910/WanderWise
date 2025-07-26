@@ -40,7 +40,7 @@ public class TravelHotel {
     @Column(length = 20)
     private String contact;
 
-    @Column(columnDefinition = "TEXT")
+    @Column(name = "image_url", columnDefinition = "TEXT")
     private String imageUrl;
 
     // Getters and setters
