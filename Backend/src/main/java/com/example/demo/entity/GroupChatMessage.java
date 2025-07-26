@@ -32,6 +32,9 @@ public class GroupChatMessage {
     @Column(name = "message", nullable = false, columnDefinition = "TEXT")
     private String message;
     
+    @Column(name = "is_public", nullable = false)
+    private Boolean isPublic = false;
+    
     @CreationTimestamp
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;

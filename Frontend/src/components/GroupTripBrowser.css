@@ -349,6 +349,15 @@
     background-color: #4b5563;
 }
 
+.btn-info {
+    background-color: #3b82f6;
+    color: white;
+}
+
+.btn-info:hover {
+    background-color: #2563eb;
+}
+
 .btn-primary {
     background-color: #10b981;
     color: white;

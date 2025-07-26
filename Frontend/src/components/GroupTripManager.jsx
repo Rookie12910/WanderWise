@@ -245,7 +245,8 @@ const GroupTripManager = () => {
 
         try {
             console.log('� Sending chat message:', newMessage.trim());
-            const response = await tripApi.sendGroupChatMessage(selectedTrip.id, newMessage.trim());
+            // Set isPublic to true so non-members can see the host's messages
+            const response = await tripApi.sendGroupChatMessage(selectedTrip.id, newMessage.trim(), true);
             if (response.success) {
                 console.log('✅ Message sent successfully:', response.data);
                 // Add the new message to the list

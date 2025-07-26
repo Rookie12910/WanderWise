@@ -247,6 +247,30 @@ const TripDetailsModal = ({ trip, isOpen, onClose }) => {
                       </div>
                     </div>
                     <div className="day-activities-modal">
+                      {/* Breakfast Options */}
+                      {day.breakfast_options && day.breakfast_options.length > 0 && (
+                        <div className="activity-block-modal breakfast">
+                          <div className="activity-time-modal">🍳 Breakfast</div>
+                          <div className="activity-content-modal">
+                            {day.breakfast_options.map((restaurant, idx) => (
+                              <div key={idx} className="restaurant-option-modal">
+                                <h5>{restaurant.restaurant_name}</h5>
+                                <p>{restaurant.cuisine} • ⭐ {restaurant.rating}/5</p>
+                                {restaurant.time && <p className="meal-time-modal">🕐 {restaurant.time}</p>}
+                                <span className="cost-modal">৳{restaurant.cost_per_person}/person</span>
+                                {restaurant.address && <p className="address-modal">📍 {restaurant.address}</p>}
+                                {restaurant.specialties && <p className="specialties-modal">🍽️ {restaurant.specialties}</p>}
+                                <TripImage
+                                  src={restaurant.image_url}
+                                  alt={restaurant.restaurant_name}
+                                  className="activity-image-modal small"
+                                  fallbackType="restaurant"
+                                />
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      )}
                       {/* Transportation to Morning Activity */}
                       {day.transportation_morning && (
                         <div className="transport-block-modal">

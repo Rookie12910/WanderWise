@@ -292,11 +292,32 @@ export const tripApi = {
             };
         }
     },
-    sendGroupChatMessage: async (groupTripId, message) => {
+    
+    getPublicGroupChatMessages: async (groupTripId) => {
+        try {
+            console.log('API: Loading public chat messages for trip ID:', groupTripId);
+            const response = await api.get(`/api/group-trips/${groupTripId}/public-chat`);
+            console.log('API: Public chat messages response:', response.data);
+            return response.data;
+        } catch (error) {
+            console.error('API: Error fetching public chat messages:', error);
+            console.error('API: Error details:', error.response?.data);
+            console.error('API: Error status:', error.response?.status);
+            return {
+                success: false,
+                error: error.response?.data?.error || error.message || 'Failed to load public chat messages'
+            };
+        }
+    },
+    sendGroupChatMessage: async (groupTripId, message, isPublic = false) => {
         try {
             console.log('API: Sending group chat message to trip ID:', groupTripId);
             console.log('API: Message content:', message);
-            const requestData = { message: message };
+            console.log('API: Is public message:', isPublic);
+            const requestData = { 
+                message: message,
+                publicMessage: isPublic  // Updated to match backend field name
+            };
             const response = await api.post(`/api/group-trips/${groupTripId}/chat`, requestData);
             console.log('API: Group chat message response status:', response.status);
             console.log('API: Group chat message response data:', response.data);

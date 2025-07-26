@@ -1,8 +1,11 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
 import { tripApi } from '../api';
 import './GroupTripBrowser.css';
+import './PreviewChatStyles.css';
+import AuthContext from '../context/AuthContext';
 
 const GroupTripBrowser = () => {
+    const { currentUser } = useContext(AuthContext);
     const [availableTrips, setAvailableTrips] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
@@ -12,6 +15,11 @@ const GroupTripBrowser = () => {
     const [selectedTrip, setSelectedTrip] = useState(null);
     const [showJoinModal, setShowJoinModal] = useState(false);
     const [joinMessage, setJoinMessage] = useState('');
+    const [showPreviewChat, setShowPreviewChat] = useState(false);
+    const [selectedTripForChat, setSelectedTripForChat] = useState(null);
+    const [previewChatMessages, setPreviewChatMessages] = useState([]);
+    const [newPreviewMessage, setNewPreviewMessage] = useState('');
+    const [loadingPreviewChat, setLoadingPreviewChat] = useState(false);
 
     useEffect(() => {
         fetchAvailableTrips();
@@ -71,6 +79,50 @@ const GroupTripBrowser = () => {
         } catch (error) {
             console.error('Error joining trip:', error);
             alert('Failed to send join request. Please try again.');
+        }
+    };
+
+    const handlePreviewChat = async (trip) => {
+        setSelectedTripForChat(trip);
+        setShowPreviewChat(true);
+        loadPreviewChatMessages(trip.id);
+    };
+
+    const loadPreviewChatMessages = async (tripId) => {
+        try {
+            setLoadingPreviewChat(true);
+            // Use the public chat endpoint which will include the user's own messages
+            const response = await tripApi.getPublicGroupChatMessages(tripId);
+            if (response.success) {
+                setPreviewChatMessages(response.data);
+            } else {
+                console.error('Failed to load preview chat messages:', response.error);
+            }
+        } catch (error) {
+            console.error('Error loading preview chat:', error);
+        } finally {
+            setLoadingPreviewChat(false);
+        }
+    };
+    
+    const sendPreviewChatMessage = async () => {
+        if (!newPreviewMessage.trim() || !selectedTripForChat) return;
+        
+        try {
+            // Add isPublic flag to message to mark it as viewable by non-members
+            const response = await tripApi.sendGroupChatMessage(
+                selectedTripForChat.id, 
+                newPreviewMessage,
+                true // isPublic flag
+            );
+            
+            if (response.success) {
+                setNewPreviewMessage('');
+                // Reload messages to see the new one
+                loadPreviewChatMessages(selectedTripForChat.id);
+            }
+        } catch (error) {
+            console.error('Error sending preview message:', error);
         }
     };
 
@@ -252,13 +304,19 @@ const GroupTripBrowser = () => {
                                     <span>Created by: {trip.creatorName || 'Unknown'}</span>
                                 </div>
                                 
-                                {/* Two Buttons */}
+                                {/* Three Buttons */}
                                 <div className="trip-actions">
                                     <button 
                                         className="btn btn-secondary"
                                         onClick={() => handleViewDetails(trip)}
                                     >
                                         View Details
+                                    </button>
+                                    <button 
+                                        className="btn btn-info"
+                                        onClick={() => handlePreviewChat(trip)}
+                                    >
+                                        💬 Preview Chat
                                     </button>
                                     <button 
                                         className="btn btn-primary"
@@ -510,6 +568,84 @@ const GroupTripBrowser = () => {
                             >
                                 Close
                             </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* Preview Chat Modal */}
+            {showPreviewChat && selectedTripForChat && (
+                <div className="modal-overlay" onClick={() => setShowPreviewChat(false)}>
+                    <div className="modal-content chat-modal" onClick={(e) => e.stopPropagation()}>
+                        <div className="modal-header">
+                            <h3>Public Chat - {selectedTripForChat.groupName}</h3>
+                            <button 
+                                className="close-button" 
+                                onClick={() => setShowPreviewChat(false)}
+                            >
+                                ×
+                            </button>
+                            <button
+                                className="refresh-chat-btn"
+                                style={{ marginLeft: '10px', padding: '4px 10px', fontSize: '14px', cursor: 'pointer' }}
+                                onClick={() => loadPreviewChatMessages(selectedTripForChat.id)}
+                                disabled={loadingPreviewChat}
+                            >
+                                🔄 Refresh
+                            </button>
+                        </div>
+                        <div className="modal-body chat-body">
+                            <div className="chat-info-banner">
+                                <p>💬 This is a public chat where you can ask questions before joining the trip. Messages here are visible to everyone.</p>
+                            </div>
+                            
+                            <div className="chat-messages">
+                                {loadingPreviewChat ? (
+                                    <div className="loading-messages">
+                                        <p>🔄 Loading chat messages...</p>
+                                    </div>
+                                ) : previewChatMessages.length === 0 ? (
+                                    <div className="empty-messages">
+                                        <p>No messages yet. Be the first to start the conversation!</p>
+                                    </div>
+                                ) : (
+                                    <div className="message-list">
+                                        {previewChatMessages.map((msg, index) => (
+                                            <div 
+                                                key={index} 
+                                                className={`message-item ${msg.isCurrentUser ? 'my-message' : ''}`}
+                                            >
+                                                <div className="message-sender">
+                                                    {msg.senderName || 'Unknown user'}
+                                                    {msg.senderId === selectedTripForChat.createdByUserId && (
+                                                        <span className="creator-badge">👑 Creator</span>
+                                                    )}
+                                                </div>
+                                                <div className="message-content">{msg.message}</div>
+                                                <div className="message-time">
+                                                    {new Date(msg.timestamp).toLocaleString()}
+                                                </div>
+                                            </div>
+                                        ))}
+                                    </div>
+                                )}
+                            </div>
+                            
+                            <div className="chat-input-area">
+                                <textarea
+                                    value={newPreviewMessage}
+                                    onChange={(e) => setNewPreviewMessage(e.target.value)}
+                                    placeholder="Type your message here..."
+                                    className="chat-input"
+                                />
+                                <button 
+                                    className="send-button"
+                                    onClick={sendPreviewChatMessage}
+                                    disabled={!newPreviewMessage.trim()}
+                                >
+                                    Send
+                                </button>
+                            </div>
                         </div>
                     </div>
                 </div>

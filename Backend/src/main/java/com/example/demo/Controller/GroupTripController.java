@@ -291,27 +291,65 @@ public class GroupTripController {
             ));
         }
     }
+    
+    /**
+     * Get public chat messages for a specific group trip (for non-members)
+     */
+    @GetMapping("/{groupTripId}/public-chat")
+    public ResponseEntity<?> getPublicGroupChatMessages(@PathVariable UUID groupTripId, Authentication authentication) {
+        try {
+            String userIdentifier = authentication.getName();
+            UUID userId = userService.getUserIdByEmailOrUsername(userIdentifier);
+
+            ApiResponse<List<GroupChatMessageResponse>> response = groupTripService.getPublicGroupChatMessages(groupTripId, userId);
+            
+            if (response.isSuccess()) {
+                return ResponseEntity.ok(Map.of(
+                    "success", true,
+                    "data", response.getData()
+                ));
+            } else {
+                return ResponseEntity.badRequest().body(Map.of(
+                    "success", false,
+                    "error", response.getError()
+                ));
+            }
+
+        } catch (Exception e) {
+            return ResponseEntity.internalServerError().body(Map.of(
+                "success", false,
+                "error", "Failed to fetch public chat messages: " + e.getMessage()
+            ));
+        }
+    }
 
     /**
      * Send a message to group chat
      */
     @PostMapping("/{groupTripId}/chat")
     public ResponseEntity<?> sendGroupChatMessage(@PathVariable UUID groupTripId, 
-                                                 @RequestBody Map<String, String> request,
+                                                 @RequestBody SendChatMessageRequest request,
                                                  Authentication authentication) {
         try {
+            System.out.println("CONTROLLER DEBUG - Received chat message request");
+            System.out.println("CONTROLLER DEBUG - Group Trip ID: " + groupTripId);
+            System.out.println("CONTROLLER DEBUG - Request: " + request);
+            System.out.println("CONTROLLER DEBUG - Message: " + request.getMessage());
+            //System.out.println("CONTROLLER DEBUG - Is Public: " + request.getIsPublic());
+            
             String userIdentifier = authentication.getName();
             UUID userId = userService.getUserIdByEmailOrUsername(userIdentifier);
-            String message = request.get("message");
-
-            if (message == null || message.trim().isEmpty()) {
+            System.out.println("CONTROLLER DEBUG - User ID: " + userId);
+            
+            if (request.getMessage() == null || request.getMessage().trim().isEmpty()) {
+                System.out.println("CONTROLLER DEBUG - Empty message rejected");
                 return ResponseEntity.badRequest().body(Map.of(
                     "success", false,
                     "error", "Message cannot be empty"
                 ));
             }
 
-            ApiResponse<GroupChatMessageResponse> response = groupTripService.sendGroupChatMessage(groupTripId, message, userId);
+            ApiResponse<GroupChatMessageResponse> response = groupTripService.sendGroupChatMessage(groupTripId, request, userId);
             
             if (response.isSuccess()) {
                 return ResponseEntity.ok(Map.of(

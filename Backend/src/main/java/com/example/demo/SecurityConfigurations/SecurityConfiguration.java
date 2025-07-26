@@ -79,16 +79,22 @@ public class SecurityConfiguration {
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .sessionManagement(sm -> sm.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers(OPTIONS, "/**").permitAll()
-                        .requestMatchers("/api/login", "/api/register", "/api/signup", "/api/ping",
-                                "/login/oauth2/code/**", "/oauth2/**", "/oauth2/authorization/**",
-                                "/api/verify-otp", "/api/resend-otp", "/api/cleanup-pending",
-                                "/api/destinations/featured", "/api/destinations/**","/ws/**").permitAll()
+                        .requestMatchers(OPTIONS).permitAll()
+                        .requestMatchers("/api/login", "/api/register", "/api/signup", "/api/ping").permitAll()
+                        .requestMatchers("/login/oauth2/code/*", "/oauth2/*", "/oauth2/authorization/*").permitAll()
+                        .requestMatchers("/api/verify-otp", "/api/resend-otp", "/api/cleanup-pending").permitAll()
+                        .requestMatchers("/api/destinations/featured", "/api/destinations/*").permitAll()
+                        .requestMatchers("/ws/*").permitAll()
                         // Public access for viewing blogs
-                        .requestMatchers(GET, "/api/blogs", "/api/blogs/**").permitAll()
+                        .requestMatchers(GET, "/api/blogs").permitAll()
+                        .requestMatchers(GET, "/api/blogs/*").permitAll()
+                        // Chat endpoints for authenticated users
+                        .requestMatchers(GET, "/api/group-trips/*/chat").authenticated()
+                        .requestMatchers(GET, "/api/group-trips/*/public-chat").authenticated()
+                        .requestMatchers(POST, "/api/group-trips/*/chat").authenticated()
                         // Authenticated access for creating/managing blogs
                         .requestMatchers(POST, "/api/blogs").authenticated()
-                        .requestMatchers("/api/admin/**").hasAuthority("ADMIN")
+                        .requestMatchers("/api/admin/*").hasAuthority("ADMIN")
                         .anyRequest().authenticated())
                 .oauth2Login(oauth2 -> oauth2
                         //.loginPage("/api/login")

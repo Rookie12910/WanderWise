@@ -20,4 +20,5 @@ public class GroupChatMessageResponse {
     private String message;
     private LocalDateTime timestamp;
     private boolean isCurrentUser;
+    private boolean isPublic;
 }

@@ -20,4 +20,13 @@ public interface GroupChatMessageRepository extends JpaRepository<GroupChatMessa
     
     @Query("SELECT COUNT(gcm) FROM GroupChatMessage gcm WHERE gcm.groupTripId = :groupTripId")
     long countByGroupTripId(@Param("groupTripId") UUID groupTripId);
+    
+    @Query("SELECT gcm FROM GroupChatMessage gcm WHERE gcm.groupTripId = :groupTripId AND gcm.isPublic = true ORDER BY gcm.createdAt ASC")
+    List<GroupChatMessage> findPublicMessagesByGroupTripIdOrderByCreatedAtAsc(@Param("groupTripId") UUID groupTripId);
+    
+    @Query("SELECT gcm FROM GroupChatMessage gcm WHERE gcm.groupTripId = :groupTripId AND gcm.userId = :userId ORDER BY gcm.createdAt ASC")
+    List<GroupChatMessage> findByGroupTripIdAndUserIdOrderByCreatedAtAsc(@Param("groupTripId") UUID groupTripId, @Param("userId") UUID userId);
+    
+    @Query("SELECT gcm FROM GroupChatMessage gcm WHERE gcm.groupTripId = :groupTripId AND gcm.userId = :userId AND gcm.isPublic = true ORDER BY gcm.createdAt ASC")
+    List<GroupChatMessage> findPublicMessagesByGroupTripIdAndUserIdOrderByCreatedAtAsc(@Param("groupTripId") UUID groupTripId, @Param("userId") UUID userId);
 }

@@ -17,8 +17,12 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
@@ -473,15 +477,17 @@ public class GroupTripService {
     @Transactional(readOnly = true)
     public ApiResponse<List<GroupChatMessageResponse>> getGroupChatMessages(UUID groupTripId, UUID currentUserId) {
         try {
-            // Verify user has access to this group trip
-            if (!hasAccessToGroupTrip(groupTripId, currentUserId)) {
-                return ApiResponse.<List<GroupChatMessageResponse>>builder()
-                        .success(false)
-                        .error("You don't have access to this group chat")
-                        .build();
+            // Check if user has access to this group trip
+            boolean hasAccess = hasAccessToGroupTrip(groupTripId, currentUserId);
+            
+            List<GroupChatMessage> messages;
+            if (hasAccess) {
+                // If user has access, show all messages
+                messages = groupChatMessageRepository.findByGroupTripIdOrderByCreatedAtAsc(groupTripId);
+            } else {
+                // If user doesn't have access, show only public messages
+                messages = groupChatMessageRepository.findPublicMessagesByGroupTripIdOrderByCreatedAtAsc(groupTripId);
             }
-
-            List<GroupChatMessage> messages = groupChatMessageRepository.findByGroupTripIdOrderByCreatedAtAsc(groupTripId);
             
             List<GroupChatMessageResponse> response = messages.stream()
                     .map(message -> GroupChatMessageResponse.builder()
@@ -492,6 +498,7 @@ public class GroupTripService {
                             .message(message.getMessage())
                             .timestamp(message.getCreatedAt())
                             .isCurrentUser(message.getUserId().equals(currentUserId))
+                            .isPublic(message.getIsPublic())
                             .build())
                     .collect(Collectors.toList());
 
@@ -507,21 +514,132 @@ public class GroupTripService {
                     .build();
         }
     }
-
-    @Transactional
-    public ApiResponse<GroupChatMessageResponse> sendGroupChatMessage(UUID groupTripId, String messageText, UUID currentUserId) {
+    
+    @Transactional(readOnly = true)
+    public ApiResponse<List<GroupChatMessageResponse>> getPublicGroupChatMessages(UUID groupTripId, UUID currentUserId) {
         try {
-            // Verify user has access to this group trip
-            if (!hasAccessToGroupTrip(groupTripId, currentUserId)) {
-                return ApiResponse.<GroupChatMessageResponse>builder()
+            System.out.println("DEBUG - getPublicGroupChatMessages for user: " + currentUserId + ", group: " + groupTripId);
+            
+            // Get the group trip creator's ID to ensure we see their messages
+            Optional<GroupTrip> groupTripOpt = groupTripRepository.findById(groupTripId);
+            if (!groupTripOpt.isPresent()) {
+                return ApiResponse.<List<GroupChatMessageResponse>>builder()
                         .success(false)
-                        .error("You don't have access to this group chat")
+                        .error("Group trip not found")
                         .build();
             }
+            
+            UUID creatorId = groupTripOpt.get().getCreatedByUserId();
+            System.out.println("DEBUG - Group trip creator ID: " + creatorId);
+            
+            // Get all public messages for this group trip
+            List<GroupChatMessage> publicMessages = groupChatMessageRepository.findPublicMessagesByGroupTripIdOrderByCreatedAtAsc(groupTripId);
+            System.out.println("DEBUG - Found " + publicMessages.size() + " public messages");
+            
+            // Get messages sent by the current user (whether public or not)
+            List<GroupChatMessage> currentUserMessages = groupChatMessageRepository.findByGroupTripIdAndUserIdOrderByCreatedAtAsc(groupTripId, currentUserId);
+            System.out.println("DEBUG - Found " + currentUserMessages.size() + " messages from current user");
+            
+            // Get messages sent by the creator (public or not if current user is the creator)
+            List<GroupChatMessage> creatorMessages = new ArrayList<>();
+            if (!creatorId.equals(currentUserId)) {
+                // If current user is not the creator, only get public messages from creator
+                creatorMessages = groupChatMessageRepository.findPublicMessagesByGroupTripIdAndUserIdOrderByCreatedAtAsc(groupTripId, creatorId);
+                System.out.println("DEBUG - Found " + creatorMessages.size() + " public messages from creator");
+            }
+            
+            // Combine and deduplicate messages
+            Set<UUID> messageIds = new HashSet<>();
+            List<GroupChatMessage> combinedMessages = new ArrayList<>();
+            
+            // Add all public messages
+            for (GroupChatMessage message : publicMessages) {
+                if (!messageIds.contains(message.getId())) {
+                    messageIds.add(message.getId());
+                    combinedMessages.add(message);
+                }
+            }
+            
+            // Add current user's messages that weren't already added
+            for (GroupChatMessage message : currentUserMessages) {
+                if (!messageIds.contains(message.getId())) {
+                    messageIds.add(message.getId());
+                    combinedMessages.add(message);
+                }
+            }
+            
+            // Add creator's messages that weren't already added
+            for (GroupChatMessage message : creatorMessages) {
+                if (!messageIds.contains(message.getId())) {
+                    messageIds.add(message.getId());
+                    combinedMessages.add(message);
+                }
+            }
+            
+            // Sort by timestamp
+            combinedMessages.sort(Comparator.comparing(GroupChatMessage::getCreatedAt));
+            System.out.println("DEBUG - Combined and sorted " + combinedMessages.size() + " messages");
+            
+            List<GroupChatMessageResponse> response = combinedMessages.stream()
+                    .map(message -> GroupChatMessageResponse.builder()
+                            .id(message.getId())
+                            .groupTripId(message.getGroupTripId())
+                            .senderId(message.getUserId())
+                            .senderName(message.getUserName())
+                            .message(message.getMessage())
+                            .timestamp(message.getCreatedAt())
+                            .isCurrentUser(message.getUserId().equals(currentUserId))
+                            .isPublic(message.getIsPublic())
+                            .build())
+                    .collect(Collectors.toList());
+
+            return ApiResponse.<List<GroupChatMessageResponse>>builder()
+                    .success(true)
+                    .data(response)
+                    .build();
+
+        } catch (Exception e) {
+            return ApiResponse.<List<GroupChatMessageResponse>>builder()
+                    .success(false)
+                    .error("Failed to load public chat messages: " + e.getMessage())
+                    .build();
+        }
+    }
+
+    @Transactional
+    public ApiResponse<GroupChatMessageResponse> sendGroupChatMessage(UUID groupTripId, SendChatMessageRequest request, UUID currentUserId) {
+        try {
+            System.out.println("DEBUG - sendGroupChatMessage: Starting to process message");
+            System.out.println("DEBUG - Group Trip ID: " + groupTripId);
+            System.out.println("DEBUG - User ID: " + currentUserId);
+            System.out.println("DEBUG - Request: " + request);
+            System.out.println("DEBUG - Message: " + request.getMessage());
+            System.out.println("DEBUG - Is Public: " + request.getPublicMessage());
+            
+            String messageText = request.getMessage();
+            Boolean isPublic = request.getPublicMessage() != null ? request.getPublicMessage() : false;
+            System.out.println("DEBUG - Extracted isPublic: " + isPublic);
+            
+            // Check if the user has access to the group trip
+            boolean hasAccess = hasAccessToGroupTrip(groupTripId, currentUserId);
+            System.out.println("DEBUG - Has Access: " + hasAccess);
+            System.out.println("DEBUG - Is Public Message: " + isPublic);
+            
+            // If user is not a member but message is marked as public, allow it
+            if (!hasAccess && !isPublic) {
+                System.out.println("DEBUG - Access denied: User doesn't have access and message is not public");
+                return ApiResponse.<GroupChatMessageResponse>builder()
+                        .success(false)
+                        .error("You don't have access to send private messages to this group")
+                        .build();
+            }
+            
+            System.out.println("DEBUG - Access check passed, proceeding to create message");
 
             // Get user info
             Optional<User> userOpt = userRepository.findById(currentUserId);
             String userName = userOpt.map(User::getUsername).orElse("Unknown User");
+            System.out.println("DEBUG - Sender username: " + userName);
 
             // Create and save the message
             GroupChatMessage chatMessage = GroupChatMessage.builder()
@@ -529,7 +647,11 @@ public class GroupTripService {
                     .userId(currentUserId)
                     .userName(userName)
                     .message(messageText.trim())
+                    .isPublic(isPublic) // Make sure this field is set properly
                     .build();
+            
+            System.out.println("DEBUG - Chat message object created: " + chatMessage);
+            System.out.println("DEBUG - isPublic value in message: " + chatMessage.getIsPublic());
 
             GroupChatMessage savedMessage = groupChatMessageRepository.save(chatMessage);
 
@@ -541,6 +663,7 @@ public class GroupTripService {
                     .message(savedMessage.getMessage())
                     .timestamp(savedMessage.getCreatedAt())
                     .isCurrentUser(true)
+                    .isPublic(savedMessage.getIsPublic())
                     .build();
 
             return ApiResponse.<GroupChatMessageResponse>builder()
@@ -613,14 +736,20 @@ public class GroupTripService {
     }
 
     private boolean hasAccessToGroupTrip(UUID groupTripId, UUID userId) {
+        System.out.println("DEBUG - Checking access for groupTripId: " + groupTripId + ", userId: " + userId);
+        
         // Check if user is the creator
         Optional<GroupTrip> groupTripOpt = groupTripRepository.findById(groupTripId);
         if (groupTripOpt.isPresent() && groupTripOpt.get().getCreatedByUserId().equals(userId)) {
+            System.out.println("DEBUG - User is the creator, access granted");
             return true;
         }
 
         // Check if user is an accepted member
         Optional<GroupTripMember> memberOpt = groupTripMemberRepository.findByGroupTripIdAndUserId(groupTripId, userId);
-        return memberOpt.isPresent() && memberOpt.get().getStatus() == GroupTripMember.MemberStatus.ACCEPTED;
+        boolean isAcceptedMember = memberOpt.isPresent() && memberOpt.get().getStatus() == GroupTripMember.MemberStatus.ACCEPTED;
+        System.out.println("DEBUG - User is accepted member: " + isAcceptedMember);
+        
+        return isAcceptedMember;
     }
 }

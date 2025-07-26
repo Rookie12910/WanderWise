@@ -601,6 +601,11 @@
   border-left: 4px solid #e2e8f0;
 }
 
+.activity-block-modal.breakfast {
+  background: #fff5f0;
+  border-left-color: #f56565;
+}
+
 .activity-block-modal.morning {
   background: #fffbf0;
   border-left-color: #f6ad55;
