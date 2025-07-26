@@ -1,7 +1,7 @@
-import React, { useContext, useState } from 'react';
+import React, { useContext, useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import AuthContext from '../context/AuthContext';
-import api, { tripApi } from '../api';
+import api, { tripApi, adminApi } from '../api';
 import TripImage from '../components/TripImage';
 import '../styles/create-trip.css';
 
@@ -23,6 +23,7 @@ const CreateTrip = () => {
   const [tripPlan, setTripPlan] = useState(null);
   const [error, setError] = useState('');
   const [planningStage, setPlanningStage] = useState('form'); // 'form', 'result', 'customize'
+  const [cities, setCities] = useState([]);
   
   // Customize state
   const [customizePrompt, setCustomizePrompt] = useState('');
@@ -199,6 +200,29 @@ const CreateTrip = () => {
     setError('');
   };
 
+  // Fetch cities when component mounts
+  useEffect(() => {
+    const fetchCities = async () => {
+      try {
+        const data = await adminApi.getAllCities();
+        if (data && data.length > 0) {
+          setCities(data);
+          // Set default destination to first city if not already set
+          if (!formData.destination) {
+            setFormData(prev => ({
+              ...prev,
+              destination: data[0].name
+            }));
+          }
+        }
+      } catch (err) {
+        console.error('Error fetching cities:', err);
+      }
+    };
+    
+    fetchCities();
+  }, []);
+
   const handleRegenerate = () => {
     setTripPlan(null);
     setPlanningStage('form');
@@ -258,14 +282,20 @@ const CreateTrip = () => {
                 <div className="form-grid">
                   <div className="form-group">
                     <label>Destination</label>
-                    <input
-                      type="text"
+                    <select
                       name="destination"
                       value={formData.destination}
                       onChange={handleInputChange}
-                      placeholder="e.g., Sylhet, Cox's Bazar, Bandarban"
                       required
-                    />
+                    >
+                      {cities.length === 0 ? (
+                        <option value="">Loading cities...</option>
+                      ) : (
+                        cities.map(city => (
+                          <option key={city.id} value={city.name}>{city.name}</option>
+                        ))
+                      )}
+                    </select>
                   </div>
 
                   <div className="form-group">
@@ -303,7 +333,7 @@ const CreateTrip = () => {
                       value={formData.durationDays}
                       onChange={handleInputChange}
                     >
-                      {[1,2,3,4,5,6,7,10,14].map(day => (
+                      {[1,2,3].map(day => (
                         <option key={day} value={day}>
                           {day} Day{day > 1 ? 's' : ''}
                         </option>

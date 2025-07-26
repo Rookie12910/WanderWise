@@ -112,21 +112,25 @@ const ProfileDropdown = () => {
               <span>View Profile</span>
             </button>
             
-            <button 
-              className="dropdown-item"
-              onClick={() => handleMenuClick('/my-trips')}
-            >
-              <span className="item-icon">🗺️</span>
-              <span>My Trips</span>
-            </button>
-            
-            <button 
-              className="dropdown-item"
-              onClick={() => handleMenuClick('/my-blogs')}
-            >
-              <span className="item-icon">📝</span>
-              <span>My Blog Posts</span>
-            </button>
+            {currentUser?.role !== 'ADMIN' && (
+              <>
+                <button 
+                  className="dropdown-item"
+                  onClick={() => handleMenuClick('/my-trips')}
+                >
+                  <span className="item-icon">🗺️</span>
+                  <span>My Trips</span>
+                </button>
+                
+                <button 
+                  className="dropdown-item"
+                  onClick={() => handleMenuClick('/my-blogs')}
+                >
+                  <span className="item-icon">📝</span>
+                  <span>My Blog Posts</span>
+                </button>
+              </>
+            )}
             
             <button 
               className="dropdown-item"
