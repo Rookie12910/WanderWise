@@ -18,7 +18,9 @@ import BlogPostDetail from './pages/BlogPostDetail';
 import EditBlog from './pages/EditBlog';
 import GroupTrips from './pages/GroupTrips';
 import CheckList from './pages/CheckList'; // Import CheckList
+import MyBlogs from './pages/MyBlogs';
 import './styles/global.css';
+import './styles/buttons.css'; // Import global button styles
 
 function App() {
   return (
@@ -31,7 +33,7 @@ function App() {
           <Route path="/oauth-success" element={<OAuthSuccess />} />
           <Route path="/" element={<Home />} />
           <Route path="/destination/:id" element={<DestinationDetail />} />
-          
+          <Route path="/my-blogs" element={<RequireAuth><MyBlogs /></RequireAuth>} />
           
           <Route 
             path="/create-blog" 

@@ -2,7 +2,7 @@ import React, { useState, useEffect, useContext } from 'react';
 import { useNavigate } from 'react-router-dom';
 import AuthContext from '../context/AuthContext';
 import api from '../api';
-import NotificationCenter from '../components/NotificationCenter';
+import Navbar from '../components/Navbar';
 import '../styles/Profile.css';
 
 const Profile = () => {
@@ -90,16 +90,7 @@ const Profile = () => {
 
     return (
         <div className="profile-page">
-            <header className="page-header">
-                <div className="profilepage_logo" onClick={() => navigate('/')} style={{ cursor: 'pointer' }}>
-                    WanderWise
-                </div>
-                <div className="nav-buttons">
-                    <NotificationCenter />
-                    <button onClick={() => navigate('/my-trips')} className="btn-outline">My Trips</button>
-                    <button onClick={handleLogout} className="btn-primary">Logout</button>
-                </div>
-            </header>
+            <Navbar />
             <div className="profile-container">
                 <div className="profile-card">
                     <h1>{isEditing ? 'Edit Your Profile' : 'Your Profile'}</h1>
@@ -155,7 +146,7 @@ const Profile = () => {
                                 />
                             </div>
                             <div className="form-actions">
-                                <button type="button" onClick={() => setIsEditing(false)} className="btn-outline">Cancel</button>
+                                <button type="button" onClick={() => setIsEditing(false)} className="cancel-btn">Cancel</button>
                                 <button type="submit" className="btn-primary">Save Changes</button>
                             </div>
                         </form>
@@ -179,7 +170,7 @@ const Profile = () => {
                                 <p>{currentUser?.email}</p>
                                 <p className="bio">{profile.bio || 'No bio yet.'}</p>
                             </div>
-                            <button onClick={() => setIsEditing(true)} className="btn-primary">Edit Profile</button>
+                            <button onClick={() => setIsEditing(true)} className="edit-btn">Edit Profile</button>
                         </div>
                     )}
                 </div>

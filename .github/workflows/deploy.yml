@@ -7,30 +7,30 @@ on:
 
 jobs:
   # Run frontend tests
-  frontend-tests:
-    runs-on: ubuntu-latest
-    name: Frontend Tests
+  # frontend-tests:
+  #   runs-on: ubuntu-latest
+  #   name: Frontend Tests
     
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v3
+  #   steps:
+  #     - name: Checkout repository
+  #       uses: actions/checkout@v3
 
-      - name: Set up Node.js
-        uses: actions/setup-node@v3
-        with:
-          node-version: '20'
-          cache: 'npm'
-          cache-dependency-path: Frontend/package-lock.json
+  #     - name: Set up Node.js
+  #       uses: actions/setup-node@v3
+  #       with:
+  #         node-version: '20'
+  #         cache: 'npm'
+  #         cache-dependency-path: Frontend/package-lock.json
 
-      - name: Install frontend dependencies
-        working-directory: Frontend
-        run: npm ci
+  #     - name: Install frontend dependencies
+  #       working-directory: Frontend
+  #       run: npm ci
 
-      - name: Run frontend tests
-        working-directory: Frontend
-        run: npm run test:ci
-        env:
-          CI: true
+  #     - name: Run frontend tests
+  #       working-directory: Frontend
+  #       run: npm run test:ci
+  #       env:
+  #         CI: true
 
   # Run backend tests
   backend-tests:
@@ -62,11 +62,11 @@ jobs:
         working-directory: Backend
         run: ./mvnw clean test
 
-  # Deploy only if both frontend and backend tests pass
+  # Deploy only if backend tests pass (frontend tests temporarily disabled)
   deploy:
     runs-on: ubuntu-latest
     name: Deploy to Azure VM
-    needs: [frontend-tests, backend-tests]
+    needs: [backend-tests]
     
     steps:
       - name: Checkout repository

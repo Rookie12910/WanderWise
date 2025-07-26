@@ -6,6 +6,7 @@ import { tripApi } from '../api'; // <-- Import tripApi
 import TripDetailsModal from '../components/TripDetailsModal';
 import GroupTripRequestModal from '../components/GroupTripRequestModal';
 import NotificationCenter from '../components/NotificationCenter';
+import Navbar from '../components/Navbar';
 import '../styles/trips.css';
 
 const MyTrips = () => {
@@ -248,18 +249,12 @@ const MyTrips = () => {
 
   return (
     <div className="page-container">
-      <header className="page-header">
-        <div className="logo">WanderWise</div>
-        <div className="nav-buttons">
-          <NotificationCenter />
-          <button onClick={() => navigate('/')} className="btn-outline">Back to Home</button>
-        </div>
-      </header>
+       <Navbar />
       
       <div className="content-container">
         <div className="trips-header">
           <h1>My Accepted Trips</h1>
-          <button onClick={() => navigate('/travel-planner')} className="btn-primary">
+          <button onClick={() => navigate('/create-trip')} className="btn-primary">
             Plan New Trip
           </button>
         </div>
@@ -320,7 +315,7 @@ const MyTrips = () => {
                   ) : (
                     <div className="empty-section">
                       <p>No upcoming tours planned.</p>
-                      <button onClick={() => navigate('/travel-planner')} className="btn-primary">
+                      <button onClick={() => navigate('/create-trip')} className="btn-primary">
                         Plan Your Next Trip
                       </button>
                     </div>
@@ -344,7 +339,7 @@ const MyTrips = () => {
         ) : (
           <div className="empty-state">
             <p>You haven't accepted any trips yet.</p>
-            <button onClick={() => navigate('/travel-planner')} className="btn-primary">
+            <button onClick={() => navigate('/create-trip')} className="btn-primary">
               Plan Your First Trip
             </button>
           </div>

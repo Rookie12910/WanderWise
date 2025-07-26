@@ -8,6 +8,7 @@ const TripDetailsModal = ({ trip, isOpen, onClose }) => {
   const tripSummary = tripPlan.trip_summary || {};
   const dailyItinerary = tripPlan.daily_itinerary || [];
   const budgetSummary = tripPlan.budget_summary || {};
+  const preTrip = tripPlan.pre_trip_transportation || {};
 
   const formatCurrency = (amount) => {
     return new Intl.NumberFormat('en-BD', {
@@ -66,6 +67,170 @@ const TripDetailsModal = ({ trip, isOpen, onClose }) => {
               </div>
             </div>
           </div>
+
+          {/* Transportation Container */}
+          <div className="transportation-container">
+
+          {/* Pre-Trip Transportation - First Section */}
+          {preTrip && preTrip.options && preTrip.options.length > 0 && (
+            <div className="redesigned-transport-section first-section">
+              <h3 className="redesigned-section-title">
+                <span role="img" aria-label="transport">🚌</span> Pre-Trip Transportation
+              </h3>
+              <div className="pre-trip-info">
+                <div className="pre-trip-header">
+                  <p>
+                    <strong>Departure Date:</strong> {
+                      preTrip.departure_date ? 
+                      (preTrip.departure_date.includes('YYYY') ? 'Day before trip' : formatDate(preTrip.departure_date)) : 
+                      'Day before trip'
+                    }
+                  </p>
+                  <p className="pre-trip-route">
+                    <span className="origin"><strong>From:</strong> {preTrip.departure_location}</span>
+                    <span className="route-arrow">→</span>
+                    <span className="destination"><strong>To:</strong> {preTrip.arrival_location}</span>
+                  </p>
+                </div>
+                <div className="pre-trip-options">
+                  {preTrip.options.map((option, idx) => (
+                    <div key={idx} className="transport-option-card">
+                      <div className="transport-option-header">
+                        <span className="transport-mode-icon">
+                          {option.mode.toLowerCase().includes('bus') ? '🚌' : 
+                           option.mode.toLowerCase().includes('train') ? '🚆' : 
+                           option.mode.toLowerCase().includes('air') ? '✈️' : '🚗'}
+                        </span>
+                        <h4>{option.mode} by {option.operator}</h4>
+                      </div>
+                      <div className="transport-option-details">
+                        <div className="transport-time">
+                          <div className="departure">
+                            <span className="time-label">Departure</span>
+                            <span className="time-value">{option.departure_time}</span>
+                            <span className="time-clock">🕑</span>
+                          </div>
+                          <div className="duration">
+                            <span className="duration-line"></span>
+                            <span className="duration-value">{option.duration}</span>
+                          </div>
+                          <div className="arrival">
+                            <span className="time-label">Arrival</span>
+                            <span className="time-value">{option.arrival_time}</span>
+                            <span className="time-clock">🕓</span>
+                          </div>
+                        </div>
+                        <div className="transport-info">
+                          <p><strong>Cost:</strong> {formatCurrency(option.cost)}</p>
+                          <p><strong>Amenities:</strong> {option.amenities}</p>
+                          <p><strong>Booking:</strong> {option.booking_info}</p>
+                        </div>
+                        {option.image_url && (
+                          <TripImage
+                            src={option.image_url}
+                            alt={`${option.mode} by ${option.operator}`}
+                            className="transport-image"
+                            fallbackType="transport"
+                          />
+                        )}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          )}
+          
+          {/* Return Transportation */}
+          {preTrip && preTrip.options && preTrip.options.length > 0 && (
+            <div className="redesigned-transport-section last-section">
+              <h3 className="redesigned-section-title">
+                <span role="img" aria-label="transport">🚍</span> Return Transportation
+              </h3>
+              <div className="pre-trip-info">
+                <div className="pre-trip-header">
+                  <p>
+                    <strong>Departure Date:</strong> {tripSummary.start_date && dailyItinerary.length > 0 ? 
+                      (() => {
+                        // Calculate end date based on start date and duration
+                        const startDate = new Date(tripSummary.start_date);
+                        startDate.setDate(startDate.getDate() + tripSummary.duration);
+                        return startDate.toLocaleDateString('en-US', {
+                          year: 'numeric',
+                          month: 'long',
+                          day: 'numeric'
+                        });
+                      })() : 'Day after trip ends'}
+                  </p>
+                  <p className="pre-trip-route">
+                    <span className="origin"><strong>From:</strong> {tripSummary.destination}</span>
+                    <span className="route-arrow">→</span>
+                    <span className="destination"><strong>To:</strong> {tripSummary.origin}</span>
+                  </p>
+                </div>
+                <div className="pre-trip-options">
+                  {preTrip.options.map((option, idx) => {
+                    // Create reverse options with slightly different times
+                    const reverseOption = {
+                      ...option,
+                      departure_time: option.departure_time.includes('PM') ? 
+                        option.departure_time.replace('PM', 'AM') : 
+                        option.departure_time.replace('AM', 'PM'),
+                      arrival_time: option.arrival_time.includes('PM') ? 
+                        option.arrival_time.replace('PM', 'AM') : 
+                        option.arrival_time.replace('AM', 'PM')
+                    };
+                    
+                    return (
+                      <div key={idx} className="transport-option-card">
+                        <div className="transport-option-header">
+                          <span className="transport-mode-icon">
+                            {option.mode.toLowerCase().includes('bus') ? '🚌' : 
+                             option.mode.toLowerCase().includes('train') ? '🚆' : 
+                             option.mode.toLowerCase().includes('air') ? '✈️' : '🚗'}
+                          </span>
+                          <h4>{option.mode} by {option.operator}</h4>
+                        </div>
+                        <div className="transport-option-details">
+                          <div className="transport-time">
+                            <div className="departure">
+                              <span className="time-label">Departure</span>
+                              <span className="time-value">{reverseOption.departure_time}</span>
+                              <span className="time-clock">🕑</span>
+                            </div>
+                            <div className="duration">
+                              <span className="duration-line"></span>
+                              <span className="duration-value">{option.duration}</span>
+                            </div>
+                            <div className="arrival">
+                              <span className="time-label">Arrival</span>
+                              <span className="time-value">{reverseOption.arrival_time}</span>
+                              <span className="time-clock">🕓</span>
+                            </div>
+                          </div>
+                          <div className="transport-info">
+                            <p><strong>Cost:</strong> {formatCurrency(option.cost)}</p>
+                            <p><strong>Amenities:</strong> {option.amenities}</p>
+                            <p><strong>Booking:</strong> {option.booking_info}</p>
+                          </div>
+                          {option.image_url && (
+                            <TripImage
+                              src={option.image_url}
+                              alt={`${option.mode} by ${option.operator}`}
+                              className="transport-image"
+                              fallbackType="transport"
+                            />
+                          )}
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            </div>
+          )}
+          </div> {/* End of transportation-container */}
+
           {/* Daily Itinerary */}
           {dailyItinerary.length > 0 && (
             <div className="redesigned-itinerary-section">

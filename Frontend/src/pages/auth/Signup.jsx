@@ -62,7 +62,7 @@ const Signup = () => {
   return (
     <>
     <header className="auth-header">
-        <div className="logo">WanderWise</div>
+        <div className="logo" onClick={() => navigate('/')} style={{ cursor: 'pointer' }}>WanderWise</div>
       </header>
     <div className="auth-container">
       <div className="auth-card signup-card">
@@ -82,7 +82,7 @@ const Signup = () => {
           >
             ×
           </button>
-            <button 
+            {/* <button 
               onClick={handleGoogleSignup} 
               className="btn-google" 
               disabled={loading}
@@ -91,7 +91,7 @@ const Signup = () => {
             </button>
             <div className="divider">
               <span>OR</span>
-            </div>
+            </div> */}
             <button 
               onClick={() => setShowForm(true)} 
               className="btn-secondary"
