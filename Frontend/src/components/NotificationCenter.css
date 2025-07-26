@@ -1,3 +1,78 @@
+/* Modal styles for cancel trip dialog */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(0,0,0,0.25);
+  z-index: 99999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.modal-card {
+  background: #fff;
+  padding: 1.5rem 2rem;
+  border-radius: 16px;
+  min-width: 0;
+  width: 100%;
+  max-width: 340px;
+  box-shadow: 0 6px 32px rgba(0,0,0,0.18);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  border: 1px solid #eee;
+  position: relative;
+}
+
+.modal-title {
+  font-weight: 700;
+  font-size: 1.2rem;
+  color: #b71c1c;
+  margin-bottom: 8px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.modal-icon {
+  font-size: 1.5rem;
+}
+.modal-message {
+  color: #444;
+  font-size: 1rem;
+  text-align: center;
+  margin-bottom: 18px;
+}
+.modal-actions {
+  display: flex;
+  justify-content: center;
+  gap: 14px;
+  width: 100%;
+}
+.modal-btn {
+  padding: 7px 22px;
+  border-radius: 6px;
+  font-size: 1rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.2s;
+  border: 1px solid #aaa;
+  background: #f5f5f5;
+  color: #333;
+}
+.modal-btn.modal-cancel {
+  border: 1px solid #aaa;
+  background: #f5f5f5;
+  color: #333;
+}
+.modal-btn.modal-confirm {
+  border: 1px solid #e57373;
+  background: #ffcdd2;
+  color: #b71c1c;
+  font-weight: 600;
+}
 .notification-center {
     position: static;
     display: inline-block;
