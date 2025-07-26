@@ -9,6 +9,7 @@ const AdminDashboard = () => {
   const navigate = useNavigate();
   const [activeSection, setActiveSection] = useState('dashboard');
   const [destinations, setDestinations] = useState([]);
+  const [blogs, setBlogs] = useState([]);
   const [loading, setLoading] = useState(true);
   const [updateStatusLoading, setUpdateStatusLoading] = useState(false);
   const [error, setError] = useState(null);
@@ -154,8 +155,15 @@ const AdminDashboard = () => {
     }
   };
   useEffect(() => {
+    if(activeSection === 'dashboard'){
+      fetchDestinations();
+      fetchBlogPosts();
+    }
     if (activeSection === 'destinations') {
       fetchDestinations();
+    }
+    if(activeSection === 'blogs'){
+      fetchBlogPosts();
     }
   }, [activeSection]);
 
@@ -173,6 +181,20 @@ const AdminDashboard = () => {
     } catch (err) {
       console.error('Error fetching destinations:', err);
       setError('Failed to load destinations. Please try again later.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const fetchBlogPosts = async () => {
+    try {
+      setLoading(true);
+      const data = await adminApi.getAllBlogPosts();
+      setBlogs(data);
+      setError(null);
+    } catch (err) {
+      console.error('Error fetching blog posts', err);
+      setError('Failed to load blog posts. Please try again later.');
     } finally {
       setLoading(false);
     }
@@ -283,7 +305,7 @@ const AdminDashboard = () => {
     }
   };
 
-  const handleDelete = async (id) => {
+  const handleDestinationDelete = async (id) => {
     if (window.confirm('Are you sure you want to delete this destination? This action cannot be undone.')) {
       try {
         setLoading(true);
@@ -293,6 +315,22 @@ const AdminDashboard = () => {
       } catch (err) {
         console.error('Error deleting destination:', err);
         showNotification('Failed to delete destination', 'error');
+      } finally {
+        setLoading(false);
+      }
+    }
+  };
+
+  const handleBlogDelete = async (id) => {
+    if (window.confirm('Are you sure you want to delete this blog? This action cannot be undone.')) {
+      try {
+        setLoading(true);
+        await adminApi.deleteBlogPost(id);
+        showNotification('Blog deleted successfully!', 'success');
+        fetchBlogPosts();
+      } catch (err) {
+        console.error('Error deleting blog:', err);
+        showNotification('Failed to delete blog', 'error');
       } finally {
         setLoading(false);
       }
@@ -316,6 +354,7 @@ const AdminDashboard = () => {
 
   return (
     <div className="admin-dashboard">
+      
       {/* Admin Navigation Header */}
       <div className="admin-navigation">
         <div className="admin-nav-left">
@@ -323,7 +362,7 @@ const AdminDashboard = () => {
         </div>
         <div className="admin-nav-right">
           <button 
-            className="home-btn"
+            className="home-btnnn"
             onClick={handleNavigateHome}
           >
             Back to Home
@@ -345,12 +384,21 @@ const AdminDashboard = () => {
         >
           Manage Featured Destinations
         </button>
+        
+        <button 
+          className={`admin-menu-item ${activeSection === 'blogs' ? 'active' : ''}`}
+          onClick={() => setActiveSection('blogs')}
+        >
+          Manage Blog Posts
+        </button>
+
         <button
           className={`admin-menu-item ${activeSection === 'add spot' ? 'active' : ''}`}
           onClick={() => setActiveSection('add spot')}
         >
           Add New Spot
-        </button>
+         </button>
+         
         {/* Add more menu items here as needed */}
       </div>
 
@@ -373,59 +421,14 @@ const AdminDashboard = () => {
               <h3>Featured Destinations</h3>
               <p className="stat-number">{destinations.length}</p>
             </div>
-            {/* Add more stat cards as needed */}
+
+            <div className="stat-card">
+              <h3>Blog Posts</h3>
+              <p className="stat-number">{blogs.length}</p>
+            </div>
+          
           </div>
           
-          <div className="admin-actions">
-            <h3>Administrative Actions</h3>
-            <div className="admin-action-buttons">
-              <button 
-                className="admin-action-btn" 
-                onClick={async () => {
-                  try {
-                    setUpdateStatusLoading(true);
-                    const response = await tripApi.triggerAutoStatusUpdate();
-                    console.log('Trip status update response:', response);
-                    
-                    // Show more detailed success message
-                    if (response.success) {
-                      showNotification(`Trip statuses updated successfully! Check the server logs for details.`, 'success');
-                    } else {
-                      showNotification(`Update completed but returned unexpected response: ${JSON.stringify(response)}`, 'warning');
-                    }
-                  } catch (err) {
-                    console.error('Error updating trip statuses:', err);
-                    
-                    // More detailed error message
-                    const errorMsg = err.response?.data?.error || err.message || 'Unknown error';
-                    const statusCode = err.response?.status;
-                    
-                    if (statusCode === 403) {
-                      showNotification(`Permission denied: ${errorMsg}. Admin privileges required.`, 'error');
-                    } else if (statusCode === 401) {
-                      showNotification('Authentication error. Please log in again.', 'error');
-                    } else {
-                      showNotification(`Failed to update trip statuses: ${errorMsg}`, 'error');
-                    }
-                  } finally {
-                    setUpdateStatusLoading(false);
-                  }
-                }}
-                disabled={updateStatusLoading}
-              >
-                {updateStatusLoading ? 'Updating...' : 'Update Trip Statuses'}
-              </button>
-              {/* Add more admin action buttons as needed */}
-            </div>
-            <div className="admin-action-info">
-              <p><strong>Update Trip Statuses:</strong> This will check all trips and automatically:</p>
-              <ul>
-                <li>Change trips from "upcoming" to "running" if the start date has passed but the trip is still ongoing</li>
-                <li>Change trips from "running" to "completed" if the end date has passed</li>
-              </ul>
-              <p><em>Note: Trips must have proper start date and duration information stored in their JSON data.</em></p>
-            </div>
-          </div>
         </div>
       )}
 
@@ -493,7 +496,7 @@ const AdminDashboard = () => {
                           </button>
                           <button 
                             className="delete-btn"
-                            onClick={() => handleDelete(destination.id)}
+                            onClick={() => handleDestinationDelete(destination.id)}
                             title="Delete Destination"
                           >
                             Delete
@@ -723,12 +726,73 @@ const AdminDashboard = () => {
                   <li key={rest.id}>{rest.name}</li>
                 ))}
               </ul>
+              </div>
+          )}
+        </div>
+      )}
+
+
+      {/* Blog Posts Management Section */}
+       {activeSection === 'blogs' && (
+        <div className="section-content">
+          <div className="section-header">
+            <h2>Manage Blog Posts</h2>
+          </div>
+          
+          {loading ? (
+            <div className="loading">Loading blog posts...</div>
+          ) : (
+            <div className="destinations-table-container">
+              <table className="destinations-table">
+                <thead>
+                  <tr>
+                    <th>Image</th>
+                    <th>Title</th>
+                    <th>Author</th>
+                    <th>Author's Email</th>
+                    <th>Action</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {blogs.length === 0 ? (
+                    <tr>
+                      <td colSpan="7" className="no-destinations">No blog posts found</td>
+                    </tr>
+                  ) : (
+                    blogs.map(blog => (
+                      <tr key={blog.id} className=''>
+                        <td>
+                          <img 
+                            src={`${process.env.PUBLIC_URL}${blog.imageUrl}`} 
+                            alt={blog.title} 
+                            className="blog-thumbnail" 
+                          />
+                        </td>
+                        <td>{blog.title}</td>
+                        <td>{blog.username}</td>
+                        <td>{blog.userEmail}</td>
+                        <td>
+                          <button 
+                            className="delete-btn"
+                            onClick={() => handleBlogDelete(blog.id)}
+                            title="Delete Destination"
+                          >
+                            Delete
+                          </button>
+                        </td>
+                      </tr>
+                    ))
+                  )}
+                </tbody>
+              </table>
             </div>
           )}
         </div>
       )}
+
     </div>
-  );
+    
+);
 };
 
 export default AdminDashboard;

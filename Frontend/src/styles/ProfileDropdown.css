@@ -140,21 +140,29 @@
   border: none;
   text-align: left;
   cursor: pointer;
-  transition: background-color 0.2s ease;
+  transition: all 0.3s ease;
   font-size: 0.9rem;
   color: #333;
+  border-radius: 8px;
+  margin: 0 0.5rem;
+  width: calc(100% - 1rem);
 }
 
 .dropdown-item:hover {
-  background: #f8f9fa;
+  background: rgba(74, 128, 240, 0.1);
+  transform: translateY(-2px);
 }
 
 .dropdown-item.logout-item {
   color: #dc3545;
+  margin-top: 0.25rem;
+  font-weight: 500;
+  transition: all 0.3s ease;
 }
 
 .dropdown-item.logout-item:hover {
-  background: #fff5f5;
+  background: rgba(220, 53, 69, 0.1);
+  transform: translateY(-2px);
 }
 
 .item-icon {
@@ -188,7 +196,7 @@
   }
   
   .dropdown-item:hover {
-    background: #4a5568;
+    background: rgba(74, 128, 240, 0.2);
   }
   
   .dropdown-divider {
@@ -201,5 +209,9 @@
   
   .profile-details p {
     color: #a0aec0;
+  }
+  
+  .dropdown-item.logout-item:hover {
+    background: rgba(220, 53, 69, 0.2);
   }
 }

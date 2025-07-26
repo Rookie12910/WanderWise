@@ -127,10 +127,7 @@ const MyBlogs = () => {
                       <span className="stat-icon">💬</span>
                       <span className="stat-count">{blog.commentCount || 0}</span>
                     </span>
-                    <span className="stat-item">
-                      <span className="stat-icon">{blog.isPublic ? '🌍' : '🔒'}</span>
-                      <span className="stat-text">{blog.isPublic ? 'Public' : 'Private'}</span>
-                    </span>
+                  
                   </div>
 
                   <div className="blog-actions">

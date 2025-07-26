@@ -3,6 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import api from '../api'; // <-- Import api
 import { FaStar, FaMapMarkerAlt, FaRegClock } from 'react-icons/fa';
+import Navbar from '../components/Navbar';
 import '../styles/DestinationDetail.css';
 
 const DestinationDetail = () => {
@@ -46,10 +47,13 @@ const DestinationDetail = () => {
 
   return (
     <div className="detail-container">
-      <button onClick={() => navigate(-1)} className="back-button">
-        &larr; Back to Destinations
-      </button>
-      <div className="detail-header" style={{ backgroundImage: `url(${destination.imageUrl})` }}>
+      <div style={{ textAlign: 'left', width: '100%', marginBottom: '20px', clear: 'both' }}>
+        <button onClick={() => navigate(-1)} className="back-button" style={{ float: 'left' }}>
+          ← Back To Home
+        </button>
+        <div style={{ clear: 'both', height: '10px' }}></div>
+      </div>
+      <div className="detail-header" style={{ backgroundImage: `url(${destination.imageUrl})`, clear: 'both' }}>
         <div className="header-overlay">
           <h1>{destination.title}</h1>
         </div>
@@ -58,23 +62,10 @@ const DestinationDetail = () => {
         <div className="meta-info">
           <span><FaMapMarkerAlt /> {destination.destination}</span>
           <span><FaRegClock /> {destination.days} days</span>
-          <span><FaStar /> {destination.avgRating.toFixed(1)}</span>
         </div>
         <h2>About this destination</h2>
         <p>{destination.description}</p>
         
-        <div className="reviews-section">
-          <h3>Reviews</h3>
-          {destination.reviews && destination.reviews.length > 0 ? (
-            <ul>
-              {destination.reviews.map((review, index) => (
-                <li key={index}>{review}</li>
-              ))}
-            </ul>
-          ) : (
-            <p>No reviews yet.</p>
-          )}
-        </div>
       </div>
     </div>
   );

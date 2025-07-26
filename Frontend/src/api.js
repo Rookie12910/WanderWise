@@ -504,6 +504,27 @@ export const adminApi = {
             console.error('Error deleting featured destination:', error);
             throw error;
         }
+    },
+     // Get all blog postss (admin view)
+    getAllBlogPosts: async () => {
+        try {
+            const response = await api.get('/api/admin/blogs');
+            return response.data;
+        } catch (error) {
+            console.error('Error fetching blog posts:', error);
+            throw error;
+        }
+    },
+
+    // Delete a featured destination
+    deleteBlogPost: async (blogId) => {
+        try {
+            const response = await api.delete(`/api/admin/blogs/${blogId}`);
+            return response.data;
+        } catch (error) {
+            console.error('Error deleting blog post:', error);
+            throw error;
+        }
     }
 };
 
@@ -534,8 +555,7 @@ export const blogApi = {
     getAllBlogPosts: async () => {
         try {
             const response = await api.get('/api/blogs');
-            // The response is coming back as an array already, but with circular references
-            // Just check if it's an array and return it
+            
             if (response.data && Array.isArray(response.data)) {
                 console.log("Retrieved blog posts successfully:", response.data.length);
                 return response.data;

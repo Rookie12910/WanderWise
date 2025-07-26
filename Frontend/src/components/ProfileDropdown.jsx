@@ -116,7 +116,7 @@ const ProfileDropdown = () => {
               className="dropdown-item"
               onClick={() => handleMenuClick('/my-trips')}
             >
-              <span className="item-icon">🧳</span>
+              <span className="item-icon">🗺️</span>
               <span>My Trips</span>
             </button>
             

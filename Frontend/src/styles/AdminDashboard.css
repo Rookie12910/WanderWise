@@ -1,7 +1,9 @@
 .admin-dashboard {
   max-width: 1200px;
-  margin: 2rem auto;
+  margin: 0 auto;
   padding: 0 1rem;
+  background: linear-gradient(135deg, #e8f5e8 0%, #a8d5a8 100%);
+  min-height: 100vh;
 }
 
 .admin-header {
@@ -17,23 +19,48 @@
 }
 
 .add-destination-btn {
-  background-color: #4CAF50;
+  background: linear-gradient(135deg, #2d7d32 0%, #1b5e20 100%);
   color: white;
   border: none;
-  padding: 0.75rem 1.5rem;
-  border-radius: 4px;
-  font-weight: bold;
+  padding: 0.875rem 2rem;
+  border-radius: 12px;
+  font-weight: 600;
+  font-size: 0.95rem;
   cursor: pointer;
-  transition: background-color 0.3s;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 4px 15px rgba(45, 125, 50, 0.4);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  position: relative;
+  overflow: hidden;
+}
+
+.add-destination-btn::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+  transition: left 0.5s ease;
+}
+
+.add-destination-btn:hover::before {
+  left: 100%;
 }
 
 .add-destination-btn:hover {
-  background-color: #45a049;
+  background: linear-gradient(135deg, #1b5e20 0%, #0d3f14 100%);
+  box-shadow: 0 6px 20px rgba(45, 125, 50, 0.6);
+  transform: translateY(-3px);
 }
 
 .add-destination-btn:disabled {
-  background-color: #cccccc;
+  background: linear-gradient(135deg, #a0aec0 0%, #cbd5e0 100%);
   cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
 }
 
 /* Notification styles */
@@ -65,9 +92,11 @@
 /* Table styles */
 .destinations-table-container {
   overflow-x: auto;
-  background-color: white;
-  border-radius: 8px;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  background: rgba(255, 255, 255, 0.9);
+  backdrop-filter: blur(10px);
+  border-radius: 16px;
+  box-shadow: 0 8px 32px rgba(31, 38, 135, 0.37);
+  border: 1px solid rgba(255, 255, 255, 0.18);
 }
 
 .destinations-table {
@@ -77,19 +106,27 @@
 
 .destinations-table th,
 .destinations-table td {
-  padding: 1rem;
+  padding: 1.2rem;
   text-align: left;
-  border-bottom: 1px solid #eee;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.05);
 }
 
 .destinations-table th {
-  background-color: #f8f9fa;
-  font-weight: bold;
-  color: #495057;
+  background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+  font-weight: 700;
+  color: #475569;
+  font-size: 0.9rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.destinations-table tbody tr {
+  transition: all 0.3s ease;
 }
 
 .destinations-table tbody tr:hover {
-  background-color: #f8f9fa;
+  background: rgba(45, 125, 50, 0.05);
+  transform: scale(1.01);
 }
 
 .destinations-table tr.inactive {
@@ -128,29 +165,45 @@
 }
 
 .toggle-status-btn {
-  background-color: #17a2b8;
+  background: linear-gradient(135deg, #17a2b8 0%, #138496 100%);
   color: white;
   border: none;
-  padding: 0.5rem 0.75rem;
-  border-radius: 4px;
+  padding: 0.6rem 1rem;
+  border-radius: 8px;
   cursor: pointer;
+  font-weight: 600;
+  font-size: 0.85rem;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 3px 10px rgba(23, 162, 184, 0.3);
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
 }
 
 .toggle-status-btn:hover {
-  background-color: #138496;
+  background: linear-gradient(135deg, #138496 0%, #0c5460 100%);
+  box-shadow: 0 5px 15px rgba(23, 162, 184, 0.5);
+  transform: translateY(-2px);
 }
 
 .delete-btn {
-  background-color: #dc3545;
+  background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);
   color: white;
   border: none;
-  padding: 0.5rem 0.75rem;
-  border-radius: 4px;
+  padding: 0.6rem 1rem;
+  border-radius: 8px;
   cursor: pointer;
+  font-weight: 600;
+  font-size: 0.85rem;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 3px 10px rgba(220, 53, 69, 0.3);
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
 }
 
 .delete-btn:hover {
-  background-color: #c82333;
+  background: linear-gradient(135deg, #c82333 0%, #a71e2a 100%);
+  box-shadow: 0 5px 15px rgba(220, 53, 69, 0.5);
+  transform: translateY(-2px);
 }
 
 .no-destinations {
@@ -344,59 +397,127 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 1rem 0;
-  margin-bottom: 1.5rem;
-  border-bottom: 1px solid #e9ecef;
+  padding: 2rem 0 1.5rem 0;
+  margin-bottom: 2rem;
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(10px);
+  border-radius: 20px;
+  box-shadow: 0 8px 32px rgba(31, 38, 135, 0.37);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  margin-top: 1rem;
+  padding-left: 2rem;
+  padding-right: 2rem;
 }
 
 .admin-nav-left h1 {
   margin: 0;
-  font-size: 1.75rem;
-  color: #343a40;
+  font-size: 2rem;
+  font-weight: 700;
+  background: linear-gradient(135deg, #2d7d32 0%, #1b5e20 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
 }
 
-.home-btn {
-  background-color: #6c757d;
+.home-btnnn {
+  background: linear-gradient(135deg, #3498db 0%, #2980b9 100%);
   color: white;
   border: none;
-  padding: 0.5rem 1rem;
-  border-radius: 4px;
-  font-weight: 500;
+  padding: 0.75rem 1.5rem;
+  border-radius: 12px;
+  font-weight: 600;
+  font-size: 0.9rem;
   cursor: pointer;
-  transition: background-color 0.2s;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 4px 15px rgba(52, 152, 219, 0.3);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  position: relative;
+  overflow: hidden;
 }
 
-.home-btn:hover {
-  background-color: #5a6268;
+.home-btnnn::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+  transition: left 0.5s ease;
+}
+
+.home-btnnn:hover::before {
+  left: 100%;
+}
+
+.home-btnnn:hover {
+  background: linear-gradient(135deg, #2980b9 0%, #1f5f8b 100%);
+  box-shadow: 0 6px 20px rgba(52, 152, 219, 0.4);
+  transform: translateY(-3px);
 }
 
 .admin-menu {
   display: flex;
-  gap: 0.5rem;
+  gap: 1rem;
   margin-bottom: 2rem;
   flex-wrap: wrap;
-  border-bottom: 1px solid #e9ecef;
-  padding-bottom: 1rem;
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(10px);
+  border-radius: 20px;
+  padding: 1.5rem;
+  box-shadow: 0 8px 32px rgba(31, 38, 135, 0.37);
+  border: 1px solid rgba(255, 255, 255, 0.18);
 }
 
 .admin-menu-item {
-  padding: 0.75rem 1.25rem;
-  background-color: #f8f9fa;
-  border: 1px solid #dee2e6;
-  border-radius: 4px;
-  font-weight: 500;
+  padding: 1rem 1.5rem;
+  background: rgba(255, 255, 255, 0.8);
+  border: 2px solid transparent;
+  border-radius: 12px;
+  font-weight: 600;
+  font-size: 0.9rem;
   cursor: pointer;
-  transition: all 0.2s;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  overflow: hidden;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+}
+
+.admin-menu-item::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(45, 125, 50, 0.1), transparent);
+  transition: left 0.5s ease;
+}
+
+.admin-menu-item:hover::before {
+  left: 100%;
 }
 
 .admin-menu-item:hover {
-  background-color: #e9ecef;
+  background: rgba(45, 125, 50, 0.1);
+  border-color: rgba(45, 125, 50, 0.3);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(45, 125, 50, 0.2);
 }
 
 .admin-menu-item.active {
-  background-color: #007bff;
+  background: linear-gradient(135deg, #2d7d32 0%, #1b5e20 100%);
   color: white;
-  border-color: #007bff;
+  border-color: transparent;
+  box-shadow: 0 6px 20px rgba(45, 125, 50, 0.4);
+}
+
+.admin-menu-item.active:hover {
+  background: linear-gradient(135deg, #1b5e20 0%, #0d3f14 100%);
+  transform: translateY(-2px);
 }
 
 .section-header {
@@ -413,10 +534,28 @@
 }
 
 .dashboard-overview {
-  background-color: white;
-  padding: 2rem;
-  border-radius: 8px;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(10px);
+  padding: 2.5rem;
+  border-radius: 20px;
+  box-shadow: 0 8px 32px rgba(31, 38, 135, 0.37);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+}
+
+.dashboard-overview h2 {
+  background: linear-gradient(135deg, #2d7d32 0%, #1b5e20 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  font-size: 2rem;
+  font-weight: 700;
+  margin-bottom: 1rem;
+}
+
+.dashboard-overview p {
+  color: #64748b;
+  font-size: 1.1rem;
+  line-height: 1.6;
 }
 
 .dashboard-stats {
@@ -427,39 +566,60 @@
 }
 
 .stat-card {
-  background-color: #f8f9fa;
-  border: 1px solid #dee2e6;
-  border-radius: 8px;
-  padding: 1.5rem;
-  min-width: 200px;
+  background: rgba(255, 255, 255, 0.9);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 16px;
+  padding: 2rem;
+  min-width: 220px;
   flex: 1;
   text-align: center;
-  transition: transform 0.2s, box-shadow 0.2s;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  overflow: hidden;
+}
+
+.stat-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 4px;
+  background: linear-gradient(135deg, #2d7d32 0%, #1b5e20 100%);
 }
 
 .stat-card:hover {
-  transform: translateY(-5px);
-  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+  transform: translateY(-8px) scale(1.02);
+  box-shadow: 0 15px 40px rgba(45, 125, 50, 0.3);
+  border-color: rgba(45, 125, 50, 0.4);
 }
 
 .stat-card h3 {
   margin-top: 0;
-  color: #495057;
-  font-size: 1.25rem;
+  color: #475569;
+  font-size: 1.3rem;
+  font-weight: 600;
+  margin-bottom: 1rem;
 }
 
 .stat-number {
-  font-size: 2.5rem;
-  font-weight: bold;
-  color: #007bff;
+  font-size: 3rem;
+  font-weight: 800;
+  background: linear-gradient(135deg, #2d7d32 0%, #1b5e20 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
   margin: 0;
 }
 
 .section-content {
-  background-color: white;
-  padding: 1.5rem;
-  border-radius: 8px;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(10px);
+  padding: 2rem;
+  border-radius: 20px;
+  box-shadow: 0 8px 32px rgba(31, 38, 135, 0.37);
+  border: 1px solid rgba(255, 255, 255, 0.18);
 }
 
 .admin-actions {
@@ -527,4 +687,177 @@
 
 .admin-action-info em {
   color: #546e7a;
+}
+
+.blog-thumbnail {
+  width: 80px;
+  height: 60px;
+  object-fit: cover;
+  border-radius: 4px;
+}
+
+/* Travel Data Management (Add New Spot) Styles */
+.travel-form {
+  background-color: #f8f9fa;
+  padding: 1.5rem;
+  border-radius: 8px;
+  margin-bottom: 2rem;
+  border: 1px solid #dee2e6;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.travel-form h3 {
+  margin-top: 0;
+  margin-bottom: 1.5rem;
+  color: #495057;
+  font-size: 1.25rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 2px solid #007bff;
+  display: inline-block;
+}
+
+.travel-form input,
+.travel-form textarea {
+  width: 100%;
+  padding: 0.75rem;
+  margin-bottom: 1rem;
+  border: 1px solid #ced4da;
+  border-radius: 4px;
+  font-size: 1rem;
+  transition: border-color 0.3s ease, box-shadow 0.3s ease;
+  box-sizing: border-box;
+}
+
+.travel-form input:focus,
+.travel-form textarea:focus {
+  outline: none;
+  border-color: #007bff;
+  box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.25);
+}
+
+.travel-form button[type="submit"] {
+  background-color: #28a745;
+  color: white;
+  border: none;
+  padding: 0.75rem 1.5rem;
+  border-radius: 4px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  margin-top: 0.5rem;
+}
+
+.travel-form button[type="submit"]:hover {
+  background-color: #218838;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(40, 167, 69, 0.3);
+}
+
+.city-details {
+  background-color: #e9ecef;
+  padding: 1.5rem;
+  border-radius: 8px;
+  margin: 1.5rem 0;
+  border: 1px solid #dee2e6;
+}
+
+.city-details h4 {
+  margin-top: 0;
+  color: #495057;
+  font-size: 1.1rem;
+}
+
+.city-details p {
+  margin: 0.5rem 0;
+  color: #6c757d;
+}
+
+.city-details strong {
+  color: #495057;
+}
+
+/* Lists styling for cities, spots, hotels, restaurants */
+.section-content ul {
+  list-style: none;
+  padding: 0;
+  margin: 1rem 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 0.75rem;
+}
+
+.section-content li {
+  background-color: #ffffff;
+  border: 1px solid #dee2e6;
+  border-radius: 4px;
+  overflow: hidden;
+  transition: all 0.3s ease;
+}
+
+.section-content li:hover {
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  transform: translateY(-2px);
+}
+
+.section-content li button {
+  width: 100%;
+  padding: 0.75rem 1rem;
+  background-color: transparent;
+  border: none;
+  text-align: left;
+  cursor: pointer;
+  color: #495057;
+  font-weight: 500;
+  transition: all 0.3s ease;
+}
+
+.section-content li button:hover {
+  background-color: #f8f9fa;
+  color: #007bff;
+}
+
+/* Section headers styling */
+.section-content h3 {
+  color: #495057;
+  font-size: 1.3rem;
+  margin: 2rem 0 1rem 0;
+  padding-bottom: 0.5rem;
+  border-bottom: 1px solid #dee2e6;
+}
+
+/* Form grid layout for better organization */
+.travel-form-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.travel-form-grid input {
+  margin-bottom: 0;
+}
+
+/* Selected item highlighting */
+.selected-item {
+  background-color: #007bff !important;
+  color: white !important;
+}
+
+.selected-item:hover {
+  background-color: #0056b3 !important;
+}
+
+/* Responsive design for travel forms */
+@media (max-width: 768px) {
+  .travel-form {
+    padding: 1rem;
+  }
+  
+  .section-content ul {
+    grid-template-columns: 1fr;
+  }
+  
+  .travel-form-grid {
+    grid-template-columns: 1fr;
+  }
 }
