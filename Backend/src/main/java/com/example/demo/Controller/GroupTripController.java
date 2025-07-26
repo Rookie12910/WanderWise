@@ -401,4 +401,42 @@ public class GroupTripController {
             ));
         }
     }
+
+    /**
+     * Remove a member from a group trip (trip creator only)
+     */
+    @DeleteMapping("/{groupTripId}/members/{memberId}")
+    public ResponseEntity<?> removeMember(@PathVariable UUID groupTripId,
+                                          @PathVariable UUID memberId,
+                                          Authentication authentication) {
+        try {
+            String userIdentifier = authentication.getName();
+            UUID creatorId = userService.getUserIdByEmailOrUsername(userIdentifier);
+            
+            // Log inputs for debugging
+            System.out.println("Remove member request - Group Trip ID: " + groupTripId + 
+                              ", Member ID: " + memberId + ", Creator ID: " + creatorId);
+            
+            ApiResponse<String> response = groupTripService.removeMember(groupTripId, memberId, creatorId);
+            
+            if (response.isSuccess()) {
+                return ResponseEntity.ok(Map.of(
+                    "success", true,
+                    "message", response.getMessage()
+                ));
+            } else {
+                return ResponseEntity.badRequest().body(Map.of(
+                    "success", false,
+                    "error", response.getError()
+                ));
+            }
+            
+        } catch (Exception e) {
+            e.printStackTrace(); // Enhanced logging for debugging
+            return ResponseEntity.internalServerError().body(Map.of(
+                "success", false,
+                "error", "Failed to remove member: " + e.getMessage()
+            ));
+        }
+    }
 }

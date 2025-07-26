@@ -275,6 +275,20 @@ export const tripApi = {
             throw error;
         }
     },
+    
+    // Remove a member from a group trip (creator only)
+    removeMember: async (groupTripId, memberId) => {
+        try {
+            console.log('🔄 Removing member from group trip:', { groupTripId, memberId });
+            const response = await api.delete(`/api/group-trips/${groupTripId}/members/${memberId}`);
+            console.log('✅ Member removed successfully:', response.data);
+            return response.data;
+        } catch (error) {
+            console.error('❌ Error removing member:', error);
+            console.error('Response data:', error.response?.data);
+            throw error;
+        }
+    },
     // ...existing code...
     getGroupChatMessages: async (groupTripId) => {
         try {
@@ -332,6 +346,24 @@ export const tripApi = {
             };
         }
     },
+    
+    // Get group trip members (for trip creator to manage members)
+    getGroupTripMembers: async (groupTripId) => {
+        try {
+            console.log('API: Fetching group members for trip ID:', groupTripId);
+            const response = await api.get(`/api/group-trips/${groupTripId}/members`);
+            console.log('API: Group members response:', response.data);
+            return response.data;
+        } catch (error) {
+            console.error('API: Error fetching group members:', error);
+            console.error('API: Error details:', error.response?.data);
+            return {
+                success: false,
+                error: error.response?.data?.error || error.message || 'Failed to fetch group members'
+            };
+        }
+    },
+    
     //checklist
     getCheckList: async(tripId) =>{
         try{

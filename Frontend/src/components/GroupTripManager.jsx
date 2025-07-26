@@ -102,6 +102,29 @@ const GroupTripManager = () => {
         }
     };
 
+    const handleRemoveMember = async (memberId) => {
+        // Confirm before removing
+        if (!window.confirm('Are you sure you want to remove this member from the group trip?')) {
+            return;
+        }
+        
+        try {
+            const response = await tripApi.removeMember(selectedTrip.id, memberId);
+            if (response.success) {
+                // Refresh the member list
+                await fetchGroupMembers(selectedTrip.id);
+                // Refresh the trip details
+                handleViewDetails(selectedTrip);
+                alert('Member removed successfully!');
+            } else {
+                alert('Failed to remove member: ' + (response.error || 'Unknown error'));
+            }
+        } catch (error) {
+            console.error('Error removing member:', error);
+            alert('Failed to remove member. Please try again.');
+        }
+    };
+
     const handleViewRequests = async (trip) => {
         try {
             const response = await tripApi.getGroupTripDetails(trip.id);
@@ -173,6 +196,11 @@ const GroupTripManager = () => {
                 break;
             case 'status':
                 setShowTripStatus(true);
+                break;
+            case 'members':
+                setShowMemberManagement(true);
+                // Load members for management
+                fetchGroupMembers(selectedTrip.id);
                 break;
             default:
                 break;
@@ -823,6 +851,17 @@ const GroupTripManager = () => {
                                                             Joined: {formatDate(member.joinedAt)}
                                                         </p>
                                                     </div>
+                                                    {/* Show remove button only for the trip creator and not for themselves */}
+                                                    {selectedTrip.isCreator && member.userId !== currentUser.id && (
+                                                        <div className="member-actions">
+                                                            <button 
+                                                                className="btn btn-danger btn-sm"
+                                                                onClick={() => handleRemoveMember(member.userId)}
+                                                            >
+                                                                Remove
+                                                            </button>
+                                                        </div>
+                                                    )}
                                                 </div>
                                             ))}
                                             {selectedTrip.members.filter(member => member.status === 'ACCEPTED').length === 0 && (
@@ -937,6 +976,13 @@ const GroupTripManager = () => {
                                 >
                                     <i className="fas fa-toggle-on"></i>
                                     Close/Open Trip
+                                </button>
+                                <button 
+                                    className="management-option-btn members-btn"
+                                    onClick={() => handleManageGroupOption('members')}
+                                >
+                                    <i className="fas fa-user-minus"></i>
+                                    Manage Members
                                 </button>
                             </div>
                         </div>
@@ -1216,6 +1262,86 @@ const GroupTripManager = () => {
                                         className="btn btn-secondary"
                                     >
                                         Cancel
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* Member Management Modal */}
+            {showMemberManagement && selectedTrip && (
+                <div className="modal-overlay" onClick={() => setShowMemberManagement(false)}>
+                    <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+                        <div className="modal-header">
+                            <h3>Manage Group Members - {selectedTrip.groupName}</h3>
+                            <button 
+                                className="close-button" 
+                                onClick={() => setShowMemberManagement(false)}
+                            >
+                                ×
+                            </button>
+                        </div>
+                        <div className="modal-body">
+                            <div className="member-management">
+                                <h4>Current Members</h4>
+                                {/* Debug info - remove in production */}
+                                <div className="debug-info" style={{ fontSize: '12px', color: '#666', margin: '10px 0', padding: '5px', background: '#f5f5f5' }}>
+                                    Total members in data: {groupMembers.length}<br/>
+                                    Accepted members: {groupMembers.filter(member => member.status === 'ACCEPTED').length}<br/>
+                                    Status values: {groupMembers.map(m => m.status).join(', ')}
+                                </div>
+                                <div className="members-list">
+                                    {groupMembers
+                                        .filter(member => {
+                                            // Check both object and string representations
+                                            return member.status === 'ACCEPTED' || 
+                                                (member.status && member.status.toString() === 'ACCEPTED') ||
+                                                member.status === 'accepted' || 
+                                                (member.status && member.status.toString().toLowerCase() === 'accepted');
+                                        })
+                                        .map((member) => (
+                                            <div key={member.id} className="member-item">
+                                                <div className="member-info">
+                                                    <h4>{member.userName}</h4>
+                                                    <p className="member-email">{member.userEmail}</p>
+                                                    <p className="joined-date">
+                                                        Joined: {formatDate(member.joinedAt)}
+                                                    </p>
+                                                </div>
+                                                {/* Don't show remove button for the trip creator */}
+                                                {member.userId !== selectedTrip.createdByUserId && (
+                                                    <div className="member-actions">
+                                                        <button 
+                                                            className="btn btn-danger btn-sm"
+                                                            onClick={() => {
+                                                                if (window.confirm(`Are you sure you want to remove ${member.userName} from the group?`)) {
+                                                                    handleRemoveMember(member.userId);
+                                                                }
+                                                            }}
+                                                        >
+                                                            Remove
+                                                        </button>
+                                                    </div>
+                                                )}
+                                            </div>
+                                        ))}
+                                    {groupMembers.filter(member => {
+                                        return member.status === 'ACCEPTED' || 
+                                            (member.status && member.status.toString() === 'ACCEPTED') ||
+                                            member.status === 'accepted' || 
+                                            (member.status && member.status.toString().toLowerCase() === 'accepted');
+                                    }).length === 0 && (
+                                        <p className="no-members">No accepted members yet</p>
+                                    )}
+                                </div>
+                                <div className="form-actions">
+                                    <button 
+                                        onClick={() => setShowMemberManagement(false)}
+                                        className="btn btn-secondary"
+                                    >
+                                        Close
                                     </button>
                                 </div>
                             </div>
