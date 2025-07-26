@@ -774,3 +774,26 @@ Return ONLY the modified trip plan as valid JSON without any explanations or mar
             "message": "Please try again with a different request or check system configuration"
         }
         return json.dumps(fallback_response, indent=2)
+def generate_gemini_suggestion(prompt):
+
+    """
+
+    Use Gemini to generate a weather-based suggestion from a prompt.
+
+    """
+
+    load_dotenv()
+
+    GEMINI_API_KEY = os.environ.get("GEMINI_API_KEY")
+
+    if not GEMINI_API_KEY:
+
+        raise ValueError("GEMINI_API_KEY not found in environment variables")
+
+    genai.configure(api_key=GEMINI_API_KEY)
+
+    model = genai.GenerativeModel('gemini-1.5-flash')
+
+    response = model.generate_content(prompt)
+
+    return response.text.strip() if hasattr(response, 'text') else str(response)

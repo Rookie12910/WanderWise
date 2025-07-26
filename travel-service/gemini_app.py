@@ -383,6 +383,68 @@ def customize_trip():
             "error": str(e),
             "message": "Failed to customize trip"
         }), 500
+# Register the weather suggestion route after app is defined
+@app.route('/weather-suggestion', methods=['POST'])
+def weather_suggestion():
+    print("[DEBUG] /weather-suggestion endpoint was called")
+    """
+    Generate a weather-based suggestion for a trip using Gemini.
+    Expects JSON: { destination, start_date, duration_days, weather_data }
+    """
+    try:
+        data = request.get_json()
+        print(f"[DEBUG] Received data: {data}")
+        destination = data.get('destination', 'Unknown')
+        start_date = data.get('start_date', '')
+        duration_days = data.get('duration_days', 1)
+        weather_data = data.get('weather_data', {})
+
+        # Compose a much more detailed prompt for Gemini based on weather
+        forecast = weather_data.get('forecast', [])
+        alerts = weather_data.get('alerts', [])
+        prompt = f"""
+You are a friendly, expert travel assistant. Based on the following weather forecast for a trip to {destination} starting {start_date} for {duration_days} days, provide a detailed, actionable, and user-friendly suggestion for the traveler.
+
+IMPORTANT: Give only 5 to 7 total suggestions, distributed across the sections below. Be concise and do not exceed this limit.
+
+Your advice must be structured into these sections, in this order, and use clear bullet points for lists:
+
+🎒 Packing Recommendations
+• List only the most essential items to pack for the expected weather (e.g., waterproof jacket, shoes, umbrella, quick-dry clothes, waterproof bags, insect repellent, etc.)
+
+🦺 Safety Tips
+• Give only the most practical safety tips for the weather (e.g., how to stay dry, avoid illness, deal with slippery surfaces, or handle heat/cold)
+
+🗺️ Local Advice
+• Explain briefly how the weather may affect local transport, sightseeing, or activities, and suggest alternatives if needed
+
+🌦️ Extra Tip (optional)
+• Add one unique, practical tip for this trip (e.g., local custom, food, or weather hack)
+
+End with a single, friendly, encouraging note (not a section heading, just a short sentence).
+
+Important:
+- Do NOT use Markdown formatting (no **bold**, *italic*, or # headings).
+- Do NOT repeat or duplicate sections.
+- Do NOT include a 'Final Advice' or 'Closing' section heading.
+- Be concise, clear, and practical.
+
+If there are weather alerts, mention them clearly at the start.
+
+Weather alerts: {', '.join(alerts) if alerts else 'None'}
+Forecast details: {json.dumps(forecast)[:500]}...
+"""
+
+        print(f"[DEBUG] Gemini prompt: {prompt}")
+        from gemini_travel_planner import generate_gemini_suggestion
+        suggestion = generate_gemini_suggestion(prompt)
+        print(f"[DEBUG] Gemini suggestion: {suggestion}")
+        return jsonify({"suggestion": suggestion, "success": True})
+    except Exception as e:
+        print(f"[ERROR] Exception in /weather-suggestion: {e}")
+        import traceback
+        traceback.print_exc()
+        return jsonify({"success": False, "error": str(e)})
 
 def enhance_trip_plan_with_images(trip_plan):
     """
