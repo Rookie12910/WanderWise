@@ -68,35 +68,50 @@ public class GroupTripService {
                         .build();
             }
 
-            // Step 3: Find user's trips
-            System.out.println("Step 3: Finding user's trip plans...");
-            List<TripPlan> userTrips = tripPlanRepository.findByUserIdOrderByCreatedAtDesc(creatorId);
-            System.out.println("Found " + userTrips.size() + " trip plans");
+            // Step 3: Validate and get the specific trip plan
+            System.out.println("Step 3: Finding specific trip plan with ID: " + request.getTripId());
             
-            if (userTrips.isEmpty()) {
-                System.out.println("ERROR: No trip plans found");
-                // Let's also check if there are any trips for any user to see if the table has data
-                long totalTrips = tripPlanRepository.count();
-                System.out.println("DEBUG: Total trip plans in database: " + totalTrips);
-                
+            if (request.getTripId() == null) {
+                System.out.println("ERROR: Trip ID is required");
                 return ApiResponse.<GroupTripResponse>builder()
                         .success(false)
-                        .error("No trip plans found. Please accept a trip first before creating a group trip.")
+                        .error("Trip ID is required")
                         .build();
             }
 
+            Optional<TripPlan> tripPlanOpt = tripPlanRepository.findById(request.getTripId());
+            if (tripPlanOpt.isEmpty()) {
+                System.out.println("ERROR: Trip plan not found with ID: " + request.getTripId());
+                return ApiResponse.<GroupTripResponse>builder()
+                        .success(false)
+                        .error("Trip plan not found with ID: " + request.getTripId())
+                        .build();
+            }
+
+            TripPlan tripPlan = tripPlanOpt.get();
+            
+            // Verify that the trip plan belongs to the user creating the group trip
+            if (!tripPlan.getUserId().equals(creatorId)) {
+                System.out.println("ERROR: Trip plan does not belong to the user");
+                return ApiResponse.<GroupTripResponse>builder()
+                        .success(false)
+                        .error("You can only create group trips from your own trip plans")
+                        .build();
+            }
+            
+            System.out.println("Trip plan found: " + tripPlan.getDestination());
+
             // Step 4: Create group trip entity
             System.out.println("Step 4: Creating group trip entity...");
-            TripPlan latestTrip = userTrips.get(0);
-            Long tripPlanId = latestTrip.getId();
+            Long tripPlanId = tripPlan.getId();
             
             GroupTrip groupTrip = GroupTrip.builder()
                     .groupName(request.getGroupName().trim())
                     .description(request.getDescription().trim())
-                    .maxPeople(request.getMaxPeople() != null ? request.getMaxPeople() : 5)
+                    .maxPeople(request.getMaxPeople()) // Use the provided maxPeople value
                     .meetingPoint(request.getMeetingPoint())
                     .additionalRequirements(request.getAdditionalRequirements())
-                    .tripPlanId(tripPlanId)
+                    .tripPlanId(request.getTripId())
                     .createdByUserId(creatorId)
                     .currentMembers(1)
                     .status(GroupTrip.GroupTripStatus.OPEN)
@@ -127,7 +142,7 @@ public class GroupTripService {
 
             // Step 6: Create response
             System.out.println("Step 6: Creating response...");
-            savedGroupTrip.setTripPlan(latestTrip.getTripPlan());
+            savedGroupTrip.setTripPlan(tripPlan.getTripPlan());
 
             GroupTripResponse response = GroupTripResponse.builder()
                     .id(savedGroupTrip.getId())
@@ -139,7 +154,7 @@ public class GroupTripService {
                     .createdByUserId(savedGroupTrip.getCreatedByUserId())
                     .creatorName(creator.getUsername())
                     .tripPlanId(savedGroupTrip.getTripPlanId())
-                    .tripPlan(latestTrip.getTripPlan())
+                    .tripPlan(tripPlan.getTripPlan())
                     .status(savedGroupTrip.getStatus())
                     .currentMembers(1)
                     .createdAt(savedGroupTrip.getCreatedAt())

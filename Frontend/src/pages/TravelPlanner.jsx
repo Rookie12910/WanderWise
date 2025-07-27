@@ -116,13 +116,18 @@ const TravelPlanner = () => {
         try {
             console.log('Creating group trip with data:', groupTripData);
             
-            // Make API call to create group trip
-            const response = await api.post('/api/group-trips/create', groupTripData);
+            // Get the trip ID from the accepted trip
+            if (!acceptedTrip || !acceptedTrip.id) {
+                throw new Error('No trip ID available. Please accept a trip first.');
+            }
             
-            if (response.data.success) {
+            // Make API call to create group trip using the proper API function
+            const response = await tripApi.createGroupTrip(groupTripData, acceptedTrip.id);
+            
+            if (response.success) {
                 alert('🎉 Group trip created successfully! Other users can now see and join your trip.');
             } else {
-                throw new Error(response.data.error || 'Failed to create group trip');
+                throw new Error(response.error || 'Failed to create group trip');
             }
         } catch (error) {
             console.error('Error creating group trip:', error);

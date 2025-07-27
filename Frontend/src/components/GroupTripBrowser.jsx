@@ -3,6 +3,7 @@ import { tripApi } from '../api';
 import './GroupTripBrowser.css';
 import './PreviewChatStyles.css';
 import AuthContext from '../context/AuthContext';
+import { getBudgetDisplayInfo, formatCurrency } from '../utils/budgetCalculations';
 
 const GroupTripBrowser = () => {
     const { currentUser } = useContext(AuthContext);
@@ -294,8 +295,27 @@ const GroupTripBrowser = () => {
                                         <span className="value">{parsedTripPlan?.trip_summary?.start_date || 'N/A'}</span>
                                     </div>
                                     <div className="summary-row">
-                                        <span className="label">Budget:</span>
-                                        <span className="value">৳{parsedTripPlan?.trip_summary?.total_budget?.toLocaleString() || 'N/A'}</span>
+                                        <span className="label">Budget per Person:</span>
+                                        <span className="value">
+                                            {(() => {
+                                                const budgetInfo = getBudgetDisplayInfo(
+                                                    parsedTripPlan?.trip_summary?.total_budget,
+                                                    trip.currentMembers,
+                                                    trip.maxPeople,
+                                                    true
+                                                );
+                                                return (
+                                                    <div className="budget-info">
+                                                        <div className="current-budget">{budgetInfo.currentPerPersonText}</div>
+                                                        {budgetInfo.savingsText && (
+                                                            <div className="savings-text" style={{fontSize: '0.8em', color: '#28a745'}}>
+                                                                {budgetInfo.savingsText}
+                                                            </div>
+                                                        )}
+                                                    </div>
+                                                );
+                                            })()}
+                                        </span>
                                     </div>
                                 </div>
                                 
@@ -369,10 +389,36 @@ const GroupTripBrowser = () => {
                                                'Not specified'}</span>
                                     </div>
                                     <div className="overview-item">
-                                        <strong>Budget per Person:</strong>
-                                        <span>{selectedTrip.tripPlan?.trip_summary?.total_budget ? 
-                                               `৳${selectedTrip.tripPlan.trip_summary.total_budget.toLocaleString()}` : 
-                                               'Not specified'}</span>
+                                        <strong>Budget per Person (Current):</strong>
+                                        <span>
+                                            {(() => {
+                                                const budgetInfo = getBudgetDisplayInfo(
+                                                    selectedTrip.tripPlan?.trip_summary?.total_budget,
+                                                    selectedTrip.currentMembers,
+                                                    selectedTrip.maxPeople,
+                                                    false
+                                                );
+                                                return budgetInfo.currentPerPersonText;
+                                            })()}
+                                        </span>
+                                    </div>
+                                    <div className="overview-item">
+                                        <strong>Budget per Person (When Full):</strong>
+                                        <span>
+                                            {(() => {
+                                                const budgetInfo = getBudgetDisplayInfo(
+                                                    selectedTrip.tripPlan?.trip_summary?.total_budget,
+                                                    selectedTrip.currentMembers,
+                                                    selectedTrip.maxPeople,
+                                                    true
+                                                );
+                                                return budgetInfo.maxCapacityText || budgetInfo.currentPerPersonText;
+                                            })()}
+                                        </span>
+                                    </div>
+                                    <div className="overview-item">
+                                        <strong>Total Trip Budget:</strong>
+                                        <span>{formatCurrency(selectedTrip.tripPlan?.trip_summary?.total_budget)}</span>
                                     </div>
                                     <div className="overview-item">
                                         <strong>Status:</strong>

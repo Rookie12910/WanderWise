@@ -185,9 +185,14 @@ export const tripApi = {
     },
 
     // Create a group trip
-    createGroupTrip: async (groupTripData) => {
+    createGroupTrip: async (groupTripData, tripId) => {
         try {
-            const response = await api.post('/api/group-trips/create', groupTripData);
+            // Include trip_id in the request data
+            const requestData = {
+                ...groupTripData,
+                tripId: tripId
+            };
+            const response = await api.post('/api/group-trips/create', requestData);
             return response.data;
         } catch (error) {
             console.error('Error creating group trip:', error);

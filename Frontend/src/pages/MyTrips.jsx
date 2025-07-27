@@ -136,15 +136,23 @@ const MyTrips = () => {
   const handleCreateGroupTrip = async (groupTripData) => {
     try {
       console.log('Creating group trip with data:', groupTripData);
+      console.log('Selected trip for group:', selectedTripForGroup);
       console.log('Stringified data:', JSON.stringify(groupTripData, null, 2));
       
-      // Make API call to create group trip (using simple API for testing)
-      const response = await tripApi.createGroupTripSimple(groupTripData);
+      // Validate that we have a selected trip with an ID
+      if (!selectedTripForGroup || !selectedTripForGroup.id) {
+        throw new Error('No trip selected. Please select a trip first.');
+      }
+      
+      // Make API call to create group trip using the proper API function
+      const response = await tripApi.createGroupTrip(groupTripData, selectedTripForGroup.id);
       
       console.log('API Response:', response);
       
       if (response.success) {
         alert('🎉 Group trip created successfully! Other users can now see and join your trip.');
+        setShowGroupTripModal(false);
+        setSelectedTripForGroup(null);
       } else {
         throw new Error(response.error || 'Failed to create group trip');
       }

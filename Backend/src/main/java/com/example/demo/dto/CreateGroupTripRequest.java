@@ -16,6 +16,7 @@ public class CreateGroupTripRequest {
     private String meetingPoint;
     private String additionalRequirements;
     private Object tripPlan; // Can be any JSON structure
+    private Long tripId; // ID of the specific trip plan to associate with the group trip
     
     @Override
     public String toString() {
@@ -26,6 +27,7 @@ public class CreateGroupTripRequest {
                 ", meetingPoint='" + meetingPoint + '\'' +
                 ", additionalRequirements='" + additionalRequirements + '\'' +
                 ", tripPlan=" + tripPlan +
+                ", tripId=" + tripId +
                 '}';
     }
 }

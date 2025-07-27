@@ -1626,3 +1626,51 @@
         align-self: flex-end;
     }
 }
+
+/* Budget Display Styles */
+.budget-info {
+    text-align: left;
+}
+
+.current-budget {
+    font-weight: bold;
+    font-size: 1.1em;
+    color: #1f2937;
+}
+
+.savings-text {
+    font-size: 0.8em !important;
+    color: #28a745 !important;
+    font-weight: 500;
+    margin-top: 2px;
+    padding: 2px 6px;
+    background-color: #d4edda;
+    border-radius: 4px;
+    display: inline-block;
+}
+
+.summary-row .budget-info {
+    min-height: 40px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+.overview-item .budget-info {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 4px;
+}
+
+/* Responsive budget display */
+@media (max-width: 768px) {
+    .savings-text {
+        font-size: 0.75em !important;
+        padding: 1px 4px;
+    }
+    
+    .current-budget {
+        font-size: 1em;
+    }
+}
