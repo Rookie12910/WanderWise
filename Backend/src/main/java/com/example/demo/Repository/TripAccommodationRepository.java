@@ -10,13 +10,13 @@ import java.util.List;
 import java.util.UUID;
 
 @Repository
-public interface TripAccommodationRepository extends JpaRepository<TripAccommodation, UUID> {    @Query(value = "SELECT h.name, '', h.lat, h.lon, h.rating, 0, 'hotel', h.contact, '' " +
-                   "FROM travel_hotels h " +
-                   "JOIN travel_spots s ON h.spot_id = s.id " +
-                   "JOIN travel_cities c ON s.city_id = c.id " +
-                   "WHERE LOWER(c.name) LIKE LOWER(CONCAT('%', :destination, '%')) " +
-                   "ORDER BY h.rating DESC NULLS LAST " +
-                   "LIMIT 10", 
-           nativeQuery = true)
-    List<Object[]> findAccommodationsByDestination(@Param("destination") String destination);
+public interface TripAccommodationRepository extends JpaRepository<TripAccommodation, UUID> {    @Query(value = "SELECT h.name, '', h.lat, h.lon, h.rating, 0, 'hotel', h.contact, h.image_url " +
+               "FROM travel_hotels h " +
+               "JOIN travel_spots s ON h.spot_id = s.id " +
+               "JOIN travel_cities c ON s.city_id = c.id " +
+               "WHERE LOWER(c.name) LIKE LOWER(CONCAT('%', :destination, '%')) " +
+               "ORDER BY h.rating DESC NULLS LAST " +
+               "LIMIT 10", 
+       nativeQuery = true)
+List<Object[]> findAccommodationsByDestination(@Param("destination") String destination);
 }

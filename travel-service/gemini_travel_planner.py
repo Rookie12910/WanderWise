@@ -118,7 +118,8 @@ def generate_trip_plan(origin, destination, start_date, day_count, budget, weath
                 "spot_name": spot_name,
                 "description": spot.get('description', 'Tourist attraction'),
                 "entry_fee": spot.get('entry_fee', 0),
-                "location": location  # Add location if available for better geographic planning
+                "location": location,  # Add location if available for better geographic planning
+                "image_url": spot.get('image_url', None)
             })
     
     if city_data.get('hotels'):
@@ -149,7 +150,8 @@ def generate_trip_plan(origin, destination, start_date, day_count, budget, weath
                 "price_range": f"{hotel.get('price_min', 0)}-{hotel.get('price_max', 0)}",
                 "rating": hotel.get('rating', 0),
                 "amenities": hotel.get('amenities', 'Standard amenities'),
-                "location": location  # Add location if available for better geographic planning
+                "location": location,
+                "image_url": hotel.get('image_url', None)  # Add location if available for better geographic planning
             })
     
     if city_data.get('restaurants'):
@@ -180,7 +182,8 @@ def generate_trip_plan(origin, destination, start_date, day_count, budget, weath
                 "cuisine": restaurant.get('cuisine_type', 'Local'),
                 "avg_cost": restaurant.get('avg_cost', 500),
                 "rating": restaurant.get('rating', 4.0),
-                "location": location  # Add location if available for better geographic planning
+                "location": location,
+                "image_url": restaurant.get('image_url', None)  # Add location if available for better geographic planning
             })
     
     city_summary = {
@@ -725,7 +728,7 @@ Intelligently modify the original trip plan according to the user's request. The
 Return a complete JSON trip plan with the EXACT same structure as the original plan.
 
 ### Image URLs: 
-Use format: "/trip-images/[descriptive_name].jpg" for all activities
+- Use the image_url field provided for each spot, hotel, and restaurant in the data above. The image_url will always be a full path like /trip-images/filename.jpg. Do NOT generate or modify image URLs—always use the exact image_url value given in the data.
 
 ### Key Points:
 - Maintain all required fields from original structure

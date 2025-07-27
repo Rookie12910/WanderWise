@@ -111,8 +111,8 @@ public class CityDataService {
                 else if (lonObj instanceof Integer) lon = ((Integer) lonObj).doubleValue();
                 spot.put("lon", lon);
 
-                spot.put("image_url", "https://cdn.example.com/images/" +
-                        (spotRow[0] != null ? spotRow[0].toString().toLowerCase().replace(" ", "_") : "default") + ".jpg");
+                // Use actual image_url from DB (assume spotRow[8] is image_url)
+                spot.put("image_url", spotRow[6]);
 
                 // Add hotels for this spot
                 List<Map<String, Object>> spotHotels = new ArrayList<>();
@@ -153,8 +153,8 @@ public class CityDataService {
                     hotel.put("lon", hotelLon);
 
                     hotel.put("contact", hotelRow[7] != null ? hotelRow[7].toString() : null);
-                    hotel.put("image_url", "https://cdn.example.com/images/" +
-                            (hotelRow[0] != null ? hotelRow[0].toString().toLowerCase().replace(" ", "_") : "hotel") + ".jpg");
+                    // Use actual image_url from DB (assume hotelRow[9] is image_url)
+                    hotel.put("image_url", hotelRow[8]);
 
                     spotHotels.add(hotel);
                 }
@@ -191,8 +191,8 @@ public class CityDataService {
                     else if (restLonObj instanceof Integer) restLon = ((Integer) restLonObj).doubleValue();
                     restaurant.put("lon", restLon);
 
-                    restaurant.put("image_url", "https://cdn.example.com/images/" +
-                            (restaurantRow[0] != null ? restaurantRow[0].toString().toLowerCase().replace(" ", "_") : "restaurant") + ".jpg");
+                    // Use actual image_url from DB (assume restaurantRow[8] is image_url)
+                    restaurant.put("image_url", restaurantRow[8]);
 
                     spotRestaurants.add(restaurant);
                 }
