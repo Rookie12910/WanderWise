@@ -175,9 +175,13 @@ const BlogInteractions = ({ blogPost }) => {
             <form onSubmit={handleAddComment} className="add-comment-form">
               <div className="comment-input-group">
                 <img 
-                  src="/default-avatar.png" 
+                  src={currentUser?.profileImage || `${process.env.PUBLIC_URL}/images/default-avatar.png`} 
                   alt="Your avatar" 
                   className="comment-avatar"
+                  onError={(e) => {
+                    e.target.onerror = null; 
+                    e.target.src = `${process.env.PUBLIC_URL}/images/default-avatar.png`;
+                  }}
                 />
                 <textarea
                   value={comments.newComment}
@@ -227,6 +231,14 @@ const CommentItem = ({ comment, onReply, currentUser }) => {
   const [replyContent, setReplyContent] = useState('');
   const [submittingReply, setSubmittingReply] = useState(false);
 
+  // Function to get avatar URL
+  const getAvatarUrl = (user) => {
+    if (user && user.profileImage) {
+      return user.profileImage;
+    }
+    return `${process.env.PUBLIC_URL}/images/default-avatar.png`;
+  };
+
   const formatDateTime = (dateTimeString) => {
     const options = { 
       year: 'numeric', 
@@ -258,9 +270,13 @@ const CommentItem = ({ comment, onReply, currentUser }) => {
     <div className="comment-item">
       <div className="comment-header">
         <img 
-          src="/default-avatar.png" 
+          src={getAvatarUrl(comment.user)} 
           alt={`${comment.username}'s avatar`} 
           className="comment-avatar"
+          onError={(e) => {
+            e.target.onerror = null; 
+            e.target.src = `${process.env.PUBLIC_URL}/images/default-avatar.png`;
+          }}
         />
         <div className="comment-meta">
           <span className="comment-author">
@@ -323,9 +339,13 @@ const CommentItem = ({ comment, onReply, currentUser }) => {
             <div key={reply.id} className="reply-item">
               <div className="comment-header">
                 <img 
-                  src="/default-avatar.png" 
+                  src={getAvatarUrl(reply.user)} 
                   alt={`${reply.username}'s avatar`} 
                   className="comment-avatar small"
+                  onError={(e) => {
+                    e.target.onerror = null; 
+                    e.target.src = `${process.env.PUBLIC_URL}/images/default-avatar.png`;
+                  }}
                 />
                 <div className="comment-meta">
                   <span className="comment-author">
