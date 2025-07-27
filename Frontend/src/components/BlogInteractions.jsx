@@ -175,7 +175,7 @@ const BlogInteractions = ({ blogPost }) => {
             <form onSubmit={handleAddComment} className="add-comment-form">
               <div className="comment-input-group">
                 <img 
-                  src="/default-avatar.png" 
+                  src="/images/avatar.png" 
                   alt="Your avatar" 
                   className="comment-avatar"
                 />
@@ -258,7 +258,7 @@ const CommentItem = ({ comment, onReply, currentUser }) => {
     <div className="comment-item">
       <div className="comment-header">
         <img 
-          src="/default-avatar.png" 
+          src="/images/avatar.png" 
           alt={`${comment.username}'s avatar`} 
           className="comment-avatar"
         />
@@ -323,7 +323,7 @@ const CommentItem = ({ comment, onReply, currentUser }) => {
             <div key={reply.id} className="reply-item">
               <div className="comment-header">
                 <img 
-                  src="/default-avatar.png" 
+                  src="/images/avatar.png" 
                   alt={`${reply.username}'s avatar`} 
                   className="comment-avatar small"
                 />
