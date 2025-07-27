@@ -95,6 +95,9 @@ describe('AuthContext Methods', () => {
         response: { data: errorMessage },
       });
 
+      // Suppress console.error for this test
+      const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+
       await act(async () => {
         render(
           <AuthProvider>
@@ -108,10 +111,14 @@ describe('AuthContext Methods', () => {
       }).rejects.toThrow(errorMessage);
 
       expect(localStorageMock.setItem).not.toHaveBeenCalled();
+      consoleSpy.mockRestore();
     });
 
     test('failed login throws generic error when no backend message', async () => {
       api.post.mockRejectedValueOnce(new Error('Network error'));
+
+      // Suppress console.error for this test
+      const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
 
       await act(async () => {
         render(
@@ -124,6 +131,8 @@ describe('AuthContext Methods', () => {
       await expect(async () => {
         await authContextValue.login('test@example.com', 'wrongpassword');
       }).rejects.toThrow('Invalid credentials');
+
+      consoleSpy.mockRestore();
     });
   });
 
@@ -159,6 +168,9 @@ describe('AuthContext Methods', () => {
         response: { data: { message: errorMessage } },
       });
 
+      // Suppress console.error for this test
+      const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+
       await act(async () => {
         render(
           <AuthProvider>
@@ -170,10 +182,15 @@ describe('AuthContext Methods', () => {
       await expect(async () => {
         await authContextValue.signup('existing@example.com', 'password123', { username: 'testuser' });
       }).rejects.toThrow(errorMessage);
+
+      consoleSpy.mockRestore();
     });
 
     test('failed signup throws generic error when no backend message', async () => {
       api.post.mockRejectedValueOnce(new Error('Network error'));
+
+      // Suppress console.error for this test
+      const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
 
       await act(async () => {
         render(
@@ -186,6 +203,8 @@ describe('AuthContext Methods', () => {
       await expect(async () => {
         await authContextValue.signup('test@example.com', 'password123', { username: 'testuser' });
       }).rejects.toThrow('Failed to register');
+
+      consoleSpy.mockRestore();
     });
   });
 
@@ -213,6 +232,9 @@ describe('AuthContext Methods', () => {
     test('logout clears tokens even when API call fails', async () => {
       api.post.mockRejectedValueOnce(new Error('Server error'));
 
+      // Suppress console.error for this test
+      const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+
       await act(async () => {
         render(
           <AuthProvider>
@@ -227,6 +249,8 @@ describe('AuthContext Methods', () => {
 
       expect(localStorageMock.removeItem).toHaveBeenCalledWith('token');
       expect(localStorageMock.removeItem).toHaveBeenCalledWith('currentUser');
+
+      consoleSpy.mockRestore();
     });
   });
 

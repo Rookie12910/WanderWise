@@ -86,6 +86,9 @@ describe('AuthContext', () => {
     api.get.mockRejectedValueOnce(new Error('Unauthorized'));
     api.post.mockResolvedValueOnce({ data: {} });
 
+    // Suppress console.error for this test
+    const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+
     render(
       <TestComponent>
         <div>Test</div>
@@ -96,6 +99,8 @@ describe('AuthContext', () => {
       expect(localStorageMock.removeItem).toHaveBeenCalledWith('token');
       expect(localStorageMock.removeItem).toHaveBeenCalledWith('currentUser');
     });
+
+    consoleSpy.mockRestore();
   });
 
   test('updates token if new token is received', async () => {

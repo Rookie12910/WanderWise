@@ -196,6 +196,9 @@ describe('Authentication Integration Tests', () => {
         response: { data: { message: errorMessage } },
       });
 
+      // Suppress console.error for this test
+      const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+
       renderWithProviders(<Signup />);
 
       fireEvent.click(screen.getByRole('button', { name: /sign up with email/i }));
@@ -218,6 +221,8 @@ describe('Authentication Integration Tests', () => {
       await waitFor(() => {
         expect(screen.getByText(errorMessage)).toBeInTheDocument();
       });
+
+      consoleSpy.mockRestore();
 
       expect(mockNavigate).not.toHaveBeenCalled();
     });
@@ -364,6 +369,9 @@ describe('Authentication Integration Tests', () => {
         .mockRejectedValueOnce(new Error('First error'))
         .mockResolvedValueOnce({ data: { token: 'token', id: 1 } });
 
+      // Suppress console.error for this test
+      const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+
       renderWithProviders(<Login />);
 
       fireEvent.change(screen.getByLabelText('Email'), { 
@@ -390,12 +398,17 @@ describe('Authentication Integration Tests', () => {
       await waitFor(() => {
         expect(screen.queryByText('Invalid credentials')).not.toBeInTheDocument();
       });
+
+      consoleSpy.mockRestore();
     });
 
     test('clears error when retrying signup', async () => {
       api.post
         .mockRejectedValueOnce(new Error('First error'))
         .mockResolvedValueOnce({ data: { success: true } });
+
+      // Suppress console.error for this test
+      const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
 
       renderWithProviders(<Signup />);
 
@@ -427,6 +440,8 @@ describe('Authentication Integration Tests', () => {
       await waitFor(() => {
         expect(screen.queryByText('Failed to register')).not.toBeInTheDocument();
       });
+
+      consoleSpy.mockRestore();
     });
   });
 });
