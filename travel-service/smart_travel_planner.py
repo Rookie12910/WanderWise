@@ -4,25 +4,18 @@ from datetime import datetime, timedelta
 from dotenv import load_dotenv
 from openai import OpenAI
 
-# LangSmith imports for tracing
-# from langsmith import traceable
-# from langsmith.wrappers import wrap_openai
-
 # Import weather agent only (city data now comes from Spring Boot)
 from weather_agent import get_weather
 
 # Load environment variables
 load_dotenv()
 
-# # Initialize LangSmith environment variables
-# os.environ["LANGCHAIN_TRACING_V2"] = os.getenv("LANGCHAIN_TRACING_V2", "true")
-# os.environ["LANGCHAIN_ENDPOINT"] = os.getenv("LANGCHAIN_ENDPOINT", "https://api.smith.langchain.com")
-# os.environ["LANGCHAIN_API_KEY"] = os.getenv("LANGCHAIN_API_KEY", "")
-# os.environ["LANGCHAIN_PROJECT"] = os.getenv("LANGCHAIN_PROJECT", "wanderwise")
+# Initialize OpenAI API
+openai_api_key = os.getenv("OPENAI_API_KEY")
+if not openai_api_key:
+    raise ValueError("OPENAI_API_KEY not found in environment variables")
 
-# Initialize OpenAI client with LangSmith wrapper
-key= os.getenv("OPENAI_API_KEY")
-client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
+client = OpenAI(api_key=openai_api_key)
 
 def generate_trip_plan(origin, destination, start_date, day_count, budget, weather_data, city_data):
     """
@@ -40,8 +33,8 @@ def generate_trip_plan(origin, destination, start_date, day_count, budget, weath
     Returns:
         str: Generated trip plan from the LLM
     """
-      # Format weather data for the prompt
-    print("🌤️The key...", key)
+    # Format weather data for the prompt
+    print("🌤️The key...", openai_api_key[:10] + "..." if openai_api_key else "Not found")
     weather_info = ""
     if isinstance(weather_data, list):
         for i, weather in enumerate(weather_data[:day_count]):
@@ -81,35 +74,109 @@ def generate_trip_plan(origin, destination, start_date, day_count, budget, weath
                 humidity = weather.get('humidity', 0)
                 weather_info += f"Day {i+1} ({date}): {conditions}, High: {temp_max}°C, Low: {temp_min}°C, Rain: {rain_chance}%, Humidity: {humidity}%\n"
     else:
-        weather_info = "Weather data unavailable\n"      # Format city data efficiently for the prompt (don't include all raw data)
+        weather_info = "Weather data unavailable\n"
+    
+    # Format city data efficiently for the prompt (don't include all raw data)
     spots_summary = []
     hotels_summary = []
     restaurants_summary = []
     
+    # Print the raw structure of the first few items to diagnose the issue
+    print("\n🔍 DETAILED DATA INSPECTION:")
+    print("City data type:", type(city_data))
+    print("City data keys:", list(city_data.keys()) if isinstance(city_data, dict) else "Not a dict")
+    
+    # Debugging spots data structure
+    if city_data.get('spots'):
+        print("\nSPOTS DATA STRUCTURE:")
+        if city_data['spots'] and len(city_data['spots']) > 0:
+            first_spot = city_data['spots'][0]
+            print(f"First spot data type: {type(first_spot)}")
+            print(f"First spot keys: {list(first_spot.keys()) if isinstance(first_spot, dict) else 'Not a dict'}")
+            print(f"First spot raw data: {first_spot}")
+    
     if city_data.get('spots'):
         for spot in city_data['spots']:
+            # Check if 'name' is used instead of 'spot_name'
+            spot_name = None
+            if spot.get('spot_name'):
+                spot_name = spot.get('spot_name')
+            elif spot.get('name'):  # Check if the key is 'name' instead of 'spot_name'
+                spot_name = spot.get('name')
+                
+            if not spot_name or spot_name == 'Unknown':
+                continue
+                
+            # Try to get location information for better geographic planning
+            location = spot.get('location', spot.get('area', ''))
+            
             spots_summary.append({
-                "name": spot.get('spot_name', 'Unknown'),
+                "spot_name": spot_name,
                 "description": spot.get('description', 'Tourist attraction'),
-                "entry_fee": spot.get('entry_fee', 0)
+                "entry_fee": spot.get('entry_fee', 0),
+                "location": location  # Add location if available for better geographic planning
             })
     
     if city_data.get('hotels'):
+        # Debug hotel data structure
+        if city_data['hotels'] and len(city_data['hotels']) > 0:
+            first_hotel = city_data['hotels'][0]
+            print(f"\nHOTELS DATA STRUCTURE:")
+            print(f"First hotel data type: {type(first_hotel)}")
+            print(f"First hotel keys: {list(first_hotel.keys()) if isinstance(first_hotel, dict) else 'Not a dict'}")
+            print(f"First hotel raw data: {first_hotel}")
+            
         for hotel in city_data['hotels']:
+            # Check if 'name' is used instead of 'hotel_name'
+            hotel_name = None
+            if hotel.get('hotel_name'):
+                hotel_name = hotel.get('hotel_name')
+            elif hotel.get('name'):  # Check if the key is 'name' instead of 'hotel_name'
+                hotel_name = hotel.get('name')
+                
+            if not hotel_name or hotel_name == 'Unknown':
+                continue
+                
+            # Try to get location information for better geographic planning
+            location = hotel.get('location', hotel.get('area', ''))
+                
             hotels_summary.append({
-                "name": hotel.get('hotel_name', 'Unknown'),
+                "hotel_name": hotel_name,
                 "price_range": f"{hotel.get('price_min', 0)}-{hotel.get('price_max', 0)}",
                 "rating": hotel.get('rating', 0),
-                "amenities": hotel.get('amenities', 'Standard amenities')
+                "amenities": hotel.get('amenities', 'Standard amenities'),
+                "location": location  # Add location if available for better geographic planning
             })
     
     if city_data.get('restaurants'):
+        # Debug restaurant data structure
+        if city_data['restaurants'] and len(city_data['restaurants']) > 0:
+            first_restaurant = city_data['restaurants'][0]
+            print(f"\nRESTAURANTS DATA STRUCTURE:")
+            print(f"First restaurant data type: {type(first_restaurant)}")
+            print(f"First restaurant keys: {list(first_restaurant.keys()) if isinstance(first_restaurant, dict) else 'Not a dict'}")
+            print(f"First restaurant raw data: {first_restaurant}")
+            
         for restaurant in city_data['restaurants']:
+            # Check if 'name' is used instead of 'restaurant_name'
+            restaurant_name = None
+            if restaurant.get('restaurant_name'):
+                restaurant_name = restaurant.get('restaurant_name')
+            elif restaurant.get('name'):  # Check if the key is 'name' instead of 'restaurant_name'
+                restaurant_name = restaurant.get('name')
+                
+            if not restaurant_name or restaurant_name == 'Unknown':
+                continue
+                
+            # Try to get location information for better geographic planning
+            location = restaurant.get('location', restaurant.get('area', ''))
+                
             restaurants_summary.append({
-                "name": restaurant.get('restaurant_name', 'Unknown'),
+                "restaurant_name": restaurant_name,
                 "cuisine": restaurant.get('cuisine_type', 'Local'),
                 "avg_cost": restaurant.get('avg_cost', 500),
-                "rating": restaurant.get('rating', 4.0)
+                "rating": restaurant.get('rating', 4.0),
+                "location": location  # Add location if available for better geographic planning
             })
     
     city_summary = {
@@ -119,8 +186,14 @@ def generate_trip_plan(origin, destination, start_date, day_count, budget, weath
     }
     
     city_info = json.dumps(city_summary, indent=2, ensure_ascii=False)
-      # Print debug information about the data being used
+    
+    # Print debug information about the data being used
     print("📊 Data Summary:")
+    print(f"   Destination: {destination}")
+    print(f"   Start Date: {start_date}")
+    print(f"   Day Count: {day_count}")
+    print(f"   Budget: ৳{budget}")
+    
     # Weather data is a list of daily forecasts, not a dict
     if isinstance(weather_data, list) and weather_data:
         print(f"   Weather data: Available ({len(weather_data)} days)")
@@ -129,29 +202,45 @@ def generate_trip_plan(origin, destination, start_date, day_count, budget, weath
     else:
         print("   Weather data: Not available")
     
-    if city_data.get('success'):
-        print(f"   Spots: {len(city_data.get('spots', []))}")
-        print(f"   Hotels: {len(city_data.get('hotels', []))}")
-        print(f"   Restaurants: {len(city_data.get('restaurants', []))}")
-    print(f"   City data source: {city_data.get('data_source', 'Unknown')}")
+    # Print detailed data availability information
+    print(f"   City data structure valid: {isinstance(city_data, dict)}")
+    if isinstance(city_data, dict):
+        print(f"   City data success flag: {city_data.get('success', False)}")
+        print(f"   Spots available: {len(city_data.get('spots', []))}")
+        print(f"   Hotels available: {len(city_data.get('hotels', []))}")
+        print(f"   Restaurants available: {len(city_data.get('restaurants', []))}")
+        print(f"   City data source: {city_data.get('data_source', 'Unknown')}")
+    else:
+        print(f"   City data type: {type(city_data)}")
     print()
     
-    # Show sample of city data being used
+    # Show ALL available data for complete debugging
     if city_data.get('spots'):
-        print("🏛️ Sample spots being used:")
-        for spot in city_data['spots'][:3]:
-            print(f"   • {spot.get('spot_name', 'Unknown spot')}")
+        print("🏛️ ALL AVAILABLE SPOTS (OpenAI must use these exact names):")
+        for spot in city_data['spots']:
+            spot_name = spot.get('spot_name') or spot.get('name') or 'Unknown spot'
+            print(f"   • \"{spot_name}\"")
+            if spot_name == 'Unknown spot':
+                print(f"     (Debug: keys available: {list(spot.keys())})")
     
     if city_data.get('hotels'):
-        print("🏨 Sample hotels being used:")
-        for hotel in city_data['hotels'][:3]:
-            print(f"   • {hotel.get('hotel_name', 'Unknown hotel')} - ৳{hotel.get('price_min', 'N/A')}")
+        print("🏨 ALL AVAILABLE HOTELS (OpenAI must use these exact names):")
+        for hotel in city_data['hotels']:
+            hotel_name = hotel.get('hotel_name') or hotel.get('name') or 'Unknown hotel'
+            print(f"   • \"{hotel_name}\" - ৳{hotel.get('price_min', 'N/A')}")
+            if hotel_name == 'Unknown hotel':
+                print(f"     (Debug: keys available: {list(hotel.keys())})")
     
     if city_data.get('restaurants'):
-        print("🍽️ Sample restaurants being used:")
-        for restaurant in city_data['restaurants'][:3]:
-            print(f"   • {restaurant.get('restaurant_name', 'Unknown restaurant')} - ৳{restaurant.get('avg_cost', 'N/A')}")
-    print()# Create a clean, focused prompt for the LLM
+        print("🍽️ ALL AVAILABLE RESTAURANTS (OpenAI must use these exact names):")
+        for restaurant in city_data['restaurants']:
+            restaurant_name = restaurant.get('restaurant_name') or restaurant.get('name') or 'Unknown restaurant'
+            print(f"   • \"{restaurant_name}\" - ৳{restaurant.get('avg_cost', 'N/A')}")
+            if restaurant_name == 'Unknown restaurant':
+                print(f"     (Debug: keys available: {list(restaurant.keys())})")
+    print()
+    
+    # Create a clean, focused prompt for the LLM
     prompt = f"""Create a detailed travel itinerary using the provided data.
 
 ## Trip Parameters:
@@ -165,8 +254,18 @@ def generate_trip_plan(origin, destination, start_date, day_count, budget, weath
 ## Available Data:
 {city_info}
 
+## CRITICAL INSTRUCTIONS:
+-Firstly you must choose the places where people will visit at that particular time of the day.
+- You MUST ONLY use the exact spot_name, hotel_name, and restaurant_name values from the data provided above
+- DO NOT invent or create any spots, hotels, or restaurants that are not in the data
+- DO NOT use "Unknown" as a value for any spot_name, hotel_name, or restaurant_name
+- Every spot_name, hotel_name, and restaurant_name you use MUST be copied EXACTLY from the data above
+- If no valid spots, hotels, or restaurants are available, respond with an error message instead of making up names
+- REALISTIC GEOGRAPHY: For each day, only include spots that are geographically close to each other
+- GROUP BY LOCATION: Plan each day around spots in the same area to minimize travel time
+
 ## Task:
-Generate a comprehensive JSON travel plan using ALL the provided spots, hotels, and restaurants.
+Generate a comprehensive JSON travel plan using ONLY the provided spots, hotels, and restaurants from the data above.
 
 ## Required JSON Structure:
 {{
@@ -178,23 +277,63 @@ Generate a comprehensive JSON travel plan using ALL the provided spots, hotels, 
     "total_budget": {budget}
   }},
 
+  "pre_trip_transportation": {{
+    "departure_location": "{origin}",
+    "arrival_location": "{destination}",
+    "departure_date": "YYYY-MM-DD",
+    "options": [
+      {{
+        "mode": "bus",
+        "operator": "Hanif Enterprise",
+        "departure_time": "10:00 PM",
+        "arrival_time": "5:00 AM",
+        "duration": "7 hours",
+        "cost": 800,
+        "booking_info": "Book online at hanifenterprise.com or call 01234567890",
+        "image_url": "/trip-images/bus.jpg"
+      }},
+      {{
+        "mode": "train",
+        "operator": "Bangladesh Railway",
+        "departure_time": "8:00 PM",
+        "arrival_time": "4:00 AM",
+        "duration": "8 hours",
+        "cost": 500,
+        "amenities": "AC Chair, Dining Car",
+        "booking_info": "Book at railway station or online at railway.gov.bd",
+        "image_url": "/trip-images/train.jpg"
+      }}
+    ]
+  }},
+
   "daily_itinerary": [
     {{
       "day": 1,
       "date": "YYYY-MM-DD",
       "weather": "weather description",
+      
+      "breakfast_options": [
+        {{
+          "restaurant_name": "hotel restaurant or nearby restaurant from data",
+          "cuisine": "Bengali/Continental/etc.",
+          "cost_per_person": 250,
+          "rating": 4.0,
+          "image_url": "/trip-images/restaurant.jpg",
+          "time": "7:00 AM - 8:00 AM"
+        }}
+      ],
 
       "transportation_morning": {{
         "from": "hotel or city",
         "to": "morning spot name",
         "mode": "rickshaw / car / boat / walk / train / bus",
-        "departure_time": "8:30 AM",
-        "arrival_time": "9:00 AM",
+        "departure_time": "8:00 AM",
+        "arrival_time": "8:30 AM",
         "cost": 100
       }},
       "morning_activity": {{
         "spot_name": "use spot from data",
-        "time": "9:00 AM - 11:00 AM",
+        "time": "8:30 AM - 11:30 AM",
         "description": "activity details",
         "entry_fee": 0,
         "image_url": "/trip-images/spot.jpg"
@@ -204,8 +343,8 @@ Generate a comprehensive JSON travel plan using ALL the provided spots, hotels, 
         "from": "morning spot name",
         "to": "restaurant name",
         "mode": "walk / rickshaw / etc.",
-        "departure_time": "11:00 AM",
-        "arrival_time": "11:15 AM",
+        "departure_time": "12:00 PM",
+        "arrival_time": "12:30 PM",
         "cost": 50
       }},
       "lunch_options": [
@@ -215,7 +354,7 @@ Generate a comprehensive JSON travel plan using ALL the provided spots, hotels, 
           "cost_per_person": 400,
           "rating": 4.0,
           "image_url": "/trip-images/restaurant.jpg",
-          "time": "11:15 AM - 12:30 PM"
+          "time": "12:30 PM - 1:30 PM"
         }}
       ],
 
@@ -223,14 +362,14 @@ Generate a comprehensive JSON travel plan using ALL the provided spots, hotels, 
         "from": "restaurant name",
         "to": "afternoon spot name",
         "mode": "car / rickshaw",
-        "departure_time": "12:30 PM",
-        "arrival_time": "1:00 PM",
+        "departure_time": "1:30 PM",
+        "arrival_time": "2:00 PM",
         "cost": 150
       }},
       "afternoon_activities": [
         {{
           "spot_name": "from data",
-          "time": "1:00 PM - 5:00 PM",
+          "time": "2:00 PM - 5:30 PM",
           "description": "what to do",
           "entry_fee": 0,
           "image_url": "/trip-images/spot.jpg"
@@ -241,8 +380,8 @@ Generate a comprehensive JSON travel plan using ALL the provided spots, hotels, 
         "from": "afternoon spot",
         "to": "restaurant name",
         "mode": "walk / rickshaw / car",
-        "departure_time": "5:00 PM",
-        "arrival_time": "5:30 PM",
+        "departure_time": "5:30 PM",
+        "arrival_time": "6:00 PM",
         "cost": 80
       }},
       "dinner_options": [
@@ -252,7 +391,7 @@ Generate a comprehensive JSON travel plan using ALL the provided spots, hotels, 
           "cost_per_person": 500,
           "rating": 4.2,
           "image_url": "/trip-images/restaurant.jpg",
-          "time": "5:30 PM - 7:00 PM"
+          "time": "6:00 PM - 8:00 PM"
         }}
       ],
 
@@ -260,8 +399,8 @@ Generate a comprehensive JSON travel plan using ALL the provided spots, hotels, 
         "from": "restaurant",
         "to": "hotel name",
         "mode": "car / walk",
-        "departure_time": "7:00 PM",
-        "arrival_time": "7:30 PM",
+        "departure_time": "8:30 PM",
+        "arrival_time": "9:00 PM",
         "cost": 100
       }},
       "accommodation_options": [
@@ -271,60 +410,95 @@ Generate a comprehensive JSON travel plan using ALL the provided spots, hotels, 
           "cost_per_night": 3000,
           "amenities": "features",
           "image_url": "/trip-images/hotel.jpg",
-          "check_in_time": "7:30 PM"
+          "check_in_time": "9:00 PM"
         }}
       ],
 
       "day_budget": {{
         "accommodation": 3000,
-        "meals": 900,
+        "meals": 1150,
         "activities": 50,
         "transport": 480,
         "misc": 100,
-        "total": 4530
+        "total": 4780
       }}
     }}
   ],
   "budget_summary": {{
-    "total_accommodation": 9000,
-    "total_meals": 2700,
-    "total_activities": 150,
-    "total_transport": 1440,
-    "total_misc": 300,
-    "grand_total": 13590,
-    "remaining": -3590
+    "total_accommodation": 3000 * {day_count},
+    "total_meals": 1150 * {day_count},
+    "total_activities": 50 * {day_count},
+    "total_transport": 480 * {day_count},
+    "total_misc": 100 * {day_count},
+    "grand_total": 4780 * {day_count},
+    "remaining": {budget} - (4780 * {day_count})
   }}
 }}
 
 Instructions:
-- Use EVERY spot, hotel, and restaurant from the provided data
+- Use ONLY the spots, hotels, and restaurants from the provided data - do not invent places
+- Copy the exact spot_name, hotel_name, and restaurant_name values - do not modify them
+- If no valid data is available for a particular item, return an error message like:
+  {{
+    "error": "Insufficient data available for [destination]",
+    "missing_data": ["spots", "hotels", "restaurants"]
+  }}
 - Include transportation details between activities, meals, and hotels
 - Choose realistic transportation modes based on the distance between origin and destination.
   For example, avoid using rickshaws for intercity travel like Dhaka to Sylhet or Jaflong
+- **REALISTIC DAILY PLANNING**: 
+  * Group activities by geographic proximity - only visit places close to each other in a single day
+  * Morning and afternoon spots should be in the same area or nearby areas
+  * Choose restaurants close to the spots you're visiting
+  * Avoid planning unrealistic travel distances within a single day
+- **REALISTIC TRANSPORTATION**:
+  * Use appropriate transportation modes based on distances
+  * Include realistic travel times between locations (longer for distant places)
+  * Consider traffic conditions in urban areas
 - **CRITICAL: SYNCHRONIZE ALL TIMES PERFECTLY**
   * Transportation arrival time = Activity/Meal start time
   * Activity/Meal end time = Next transportation departure time
-  * Example: Morning activity 9:00 AM - 11:00 AM → Lunch transport departs 11:00 AM → Lunch 11:15 AM - 12:30 PM
+  * Example: Morning activity 8:30 AM - 11:30 AM → Lunch transport departs 11:30 AM → Lunch 12:00 PM - 1:30 PM
 - Weather-appropriate activities (e.g., avoid rain-prone times outdoors)
 - Use realistic durations (e.g., 30 mins walk, 2 hrs by bus)
 - Use realistic cost estimates for each transport type
 - Multiple options for meals and hotels when possible
 - Return ONLY a properly formatted valid JSON
 - Use image URLs in format: /trip-images/[name].jpg based on item name
+- **CRITICAL: The daily_itinerary array MUST contain exactly {day_count} days (from day 1 to day {day_count})**
+- **REPEAT THE DAILY STRUCTURE FOR EACH DAY with appropriate changes to activities**
 
 ## TIME SYNCHRONIZATION RULES:
-1. Day starts: 8:30 AM (hotel departure)
-2. Morning Activity: 9:00 AM - 11:00 AM (2 hours)
-3. Transport to Lunch: 11:00 AM - 11:15 AM (15 mins)
-4. Lunch: 11:15 AM - 12:30 PM (1.25 hours)
-5. Transport to Afternoon: 12:30 PM - 1:00 PM (30 mins)
-6. Afternoon Activities: 1:00 PM - 5:00 PM (4 hours)
-7. Transport to Dinner: 5:00 PM - 5:30 PM (30 mins)
-8. Dinner: 5:30 PM - 7:00 PM (1.5 hours)
-9. Transport to Hotel: 7:00 PM - 7:30 PM (30 mins)
-10. Hotel Check-in: 7:30 PM
+1. Breakfast at Hotel: 7:00 AM - 8:00 AM (1 hour)
+2. Day starts: 8:00 AM (hotel departure)
+3. Transport to Morning Activity: 8:00 AM - 8:30 AM (30 mins)
+4. Morning Activity: 8:30 AM - 12:00 PM (3.5 hours)
+5. Transport to Lunch: 12:00 PM - 12:30 PM (30 mins)
+6. Lunch: 12:30 PM - 2:00 PM (1.5 hours)
+7. Transport to Afternoon: 2:30 PM - 3:00 PM (30 mins)
+8. Afternoon Activities: 3:00 PM - 6:30 PM (3.5 hours)
+9. Transport to Dinner: 7:00 PM - 7:30 PM (30 mins)
+10. Dinner: 7:30 PM - 8:30 PM (2 hours)
+11. Transport to Hotel: 8:30 PM - 9:00 PM (30 mins)
+12. Hotel Check-in/Leisure: 9:30 PM
+
+## MULTI-DAY PLANNING INSTRUCTIONS:
+1. You MUST generate exactly {day_count} days of itinerary
+2. Each day should have unique activities (don't repeat the same spots)
+3. If you're planning a {day_count}-day trip, the daily_itinerary array MUST have {day_count} objects
+4. For dates, calculate each day by adding days to the start_date. For day 1, use {start_date}, for day 2 use the next day, etc.
+5. For each day, ensure the day number is set correctly (day 1, day 2, day 3, etc.)
+6. Distribute spots across all days - don't use all good spots on day 1
+7. Maintain the same hotel for the entire stay when possible
 
 Available images: jaflong.jpg, ratargul.jpg, lalakhal.jpg, sajek_valley.jpg, kaptai_lake.jpg, hanging_bridge.jpg, rajban_vihara.jpg, shahjalal_dargah.jpg, hotel_metro.jpg, garden_inn.jpg, sajek_resort.jpg, lalakhal_resort.jpg, paharika_inn.jpg, hotel_swamp_view.jpg, tribal_food.jpg, valley_cafe.jpg, woondal.jpg, blue_water.jpg, star_pacific.jpg, vihara_view.jpg, kutum_bari.jpg
+
+## FINAL VERIFICATION:
+Before returning your response, verify that:
+1. The daily_itinerary array contains EXACTLY {day_count} day objects
+2. Each day has the correct "day" number (1, 2, 3, etc.)
+3. Each day has a properly calculated date starting from {start_date}
+
 - Return ONLY valid JSON"""
 
     try:
@@ -336,7 +510,7 @@ Available images: jaflong.jpg, ratargul.jpg, lalakhal.jpg, sajek_valley.jpg, kap
                 {"role": "system", "content": "You are a professional travel planning assistant that creates detailed itineraries in valid JSON format. Always return properly formatted JSON without any markdown or explanations."},
                 {"role": "user", "content": prompt}
             ],
-            max_tokens=4000,  # Increased for comprehensive plans
+            max_tokens=8000,  # Increased from 4096 to handle more complex plans
             temperature=0.7,
             response_format={ "type": "json_object" }  # Ensures JSON output
         )
@@ -348,6 +522,76 @@ Available images: jaflong.jpg, ratargul.jpg, lalakhal.jpg, sajek_valley.jpg, kap
         print("=" * 80)
         print(llm_response)
         print("=" * 80)
+        
+        # Process the response to ensure it has the correct number of days
+        try:
+            # Parse the JSON response
+            trip_plan = json.loads(llm_response)
+            
+            # Check if the daily_itinerary has the correct number of days
+            if "daily_itinerary" in trip_plan and len(trip_plan["daily_itinerary"]) < day_count:
+                print(f"⚠️ Warning: Found only {len(trip_plan['daily_itinerary'])} days instead of {day_count} days")
+                
+                # Create a template day based on the first day
+                if len(trip_plan["daily_itinerary"]) > 0:
+                    template_day = trip_plan["daily_itinerary"][0].copy()
+                    
+                    # Add missing days
+                    current_days = len(trip_plan["daily_itinerary"])
+                    for i in range(current_days + 1, day_count + 1):
+                        new_day = template_day.copy()
+                        new_day["day"] = i
+                        
+                        # Calculate the date for the new day
+                        if "start_date" in trip_plan["trip_summary"] and trip_plan["trip_summary"]["start_date"]:
+                            try:
+                                start_date_obj = datetime.strptime(trip_plan["trip_summary"]["start_date"], "%Y-%m-%d")
+                                new_date = start_date_obj + timedelta(days=i-1)
+                                new_day["date"] = new_date.strftime("%Y-%m-%d")
+                            except:
+                                new_day["date"] = f"Day {i}"
+                        
+                        # Update activities to avoid duplication
+                        if "morning_activity" in new_day and "spot_name" in new_day["morning_activity"]:
+                            new_day["morning_activity"]["spot_name"] += f" (Day {i})"
+                        
+                        if "afternoon_activities" in new_day and len(new_day["afternoon_activities"]) > 0:
+                            for act in new_day["afternoon_activities"]:
+                                if "spot_name" in act:
+                                    act["spot_name"] += f" (Day {i})"
+                        
+                        trip_plan["daily_itinerary"].append(new_day)
+                    
+                    print(f"✅ Added missing days. Now trip plan has {len(trip_plan['daily_itinerary'])} days")
+                    
+                    # Update budget summary if present
+                    if "budget_summary" in trip_plan:
+                        for key in trip_plan["budget_summary"]:
+                            if key.startswith("total_") and isinstance(trip_plan["budget_summary"][key], (int, float)):
+                                # Adjust for correct number of days
+                                per_day = trip_plan["budget_summary"][key] / current_days
+                                trip_plan["budget_summary"][key] = int(per_day * day_count)
+                        
+                        # Recalculate grand total
+                        if all(k in trip_plan["budget_summary"] for k in ["total_accommodation", "total_meals", "total_activities", "total_transport", "total_misc"]):
+                            grand_total = sum([
+                                trip_plan["budget_summary"]["total_accommodation"],
+                                trip_plan["budget_summary"]["total_meals"],
+                                trip_plan["budget_summary"]["total_activities"],
+                                trip_plan["budget_summary"]["total_transport"],
+                                trip_plan["budget_summary"]["total_misc"]
+                            ])
+                            trip_plan["budget_summary"]["grand_total"] = grand_total
+                            
+                            # Recalculate remaining budget
+                            if "total_budget" in trip_plan["trip_summary"]:
+                                trip_plan["budget_summary"]["remaining"] = trip_plan["trip_summary"]["total_budget"] - grand_total
+                    
+                    # Convert back to JSON string
+                    llm_response = json.dumps(trip_plan, indent=2)
+        except Exception as e:
+            print(f"⚠️ Error in post-processing: {str(e)}")
+            # Continue with original response
         
         return llm_response
         
@@ -437,7 +681,7 @@ def customize_trip_plan(original_plan, user_prompt):
     
     try:
         # Check if OpenAI API key is available
-        if not os.getenv("OPENAI_API_KEY"):
+        if not openai_api_key:
             print("❌ OPENAI_API_KEY not found in environment variables")
             raise Exception("OpenAI API key not configured")
         
@@ -497,7 +741,7 @@ Return ONLY the modified trip plan as valid JSON without any explanations or mar
                 {"role": "system", "content": "You are a professional travel planning assistant that modifies existing itineraries based on user requests. Always return properly formatted JSON without any markdown or explanations."},
                 {"role": "user", "content": prompt}
             ],
-            max_tokens=3000,
+            max_tokens=8000,
             temperature=0.7,
             response_format={ "type": "json_object" }
         )
@@ -527,3 +771,27 @@ Return ONLY the modified trip plan as valid JSON without any explanations or mar
             "message": "Please try again with a different request or check system configuration"
         }
         return json.dumps(fallback_response, indent=2)
+
+def generate_openai_suggestion(prompt):
+    """
+    Use OpenAI to generate a weather-based suggestion from a prompt.
+    """
+    load_dotenv()
+    
+    OPENAI_API_KEY = os.environ.get("OPENAI_API_KEY")
+    
+    if not OPENAI_API_KEY:
+        raise ValueError("OPENAI_API_KEY not found in environment variables")
+    
+    client = OpenAI(api_key=OPENAI_API_KEY)
+    
+    response = client.chat.completions.create(
+        model="gpt-4o",
+        messages=[
+            {"role": "user", "content": prompt}
+        ],
+        max_tokens=1000,
+        temperature=0.7
+    )
+    
+    return response.choices[0].message.content.strip() if response.choices[0].message.content else ""
