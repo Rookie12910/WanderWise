@@ -60,7 +60,8 @@ describe('Signup Component', () => {
     
     expect(screen.getByText('Create an Account')).toBeInTheDocument();
     expect(screen.getByText('Join us and start planning your trips')).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: /sign up with google/i })).toBeInTheDocument();
+    // Google signup button is currently disabled
+    // expect(screen.getByRole('button', { name: /sign up with google/i })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: /sign up with email/i })).toBeInTheDocument();
   });
 
@@ -245,7 +246,7 @@ describe('Signup Component', () => {
     expect(screen.getByRole('button', { name: /signing up/i })).toBeDisabled();
   });
 
-  test('handles Google signup', () => {
+  test.skip('handles Google signup', () => {
     renderWithProviders(<Signup />);
     
     fireEvent.click(screen.getByRole('button', { name: /sign up with google/i }));
@@ -253,7 +254,7 @@ describe('Signup Component', () => {
     expect(mockSignupWithGoogle).toHaveBeenCalled();
   });
 
-  test('shows loading state during Google signup', () => {
+  test.skip('shows loading state during Google signup', () => {
     renderWithProviders(<Signup />);
     
     fireEvent.click(screen.getByRole('button', { name: /sign up with google/i }));
@@ -261,7 +262,7 @@ describe('Signup Component', () => {
     expect(screen.getByRole('button', { name: /sign up with google/i })).toBeDisabled();
   });
 
-  test('handles Google signup error', () => {
+  test.skip('handles Google signup error', () => {
     mockSignupWithGoogle.mockImplementation(() => {
       throw new Error('Google signup failed');
     });

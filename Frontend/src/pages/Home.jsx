@@ -270,6 +270,8 @@ const Home = () => {
                     <h3>{destination.title}</h3>
                     <p className="destination-location">{destination.destination}</p>
                     <div className="destination-meta">
+                      {destination.duration && <span>{destination.duration} days</span>}
+                      {destination.avgRating && <span>{destination.avgRating}</span>}
                     </div>
                     <p className="destination-description">{destination.description.substring(0, 100)}...</p>
                     <button 

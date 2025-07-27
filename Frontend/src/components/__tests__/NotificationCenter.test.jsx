@@ -23,6 +23,13 @@ vi.mock('../../api', () => ({
     post: vi.fn(),
     delete: vi.fn(),
   },
+  tripApi: {
+    getNotifications: vi.fn(),
+    markNotificationAsRead: vi.fn(),
+    deleteNotification: vi.fn(),
+    markAllAsRead: vi.fn(),
+    clearAllNotifications: vi.fn(),
+  },
 }));
 
 // Mock react-router-dom

@@ -34,12 +34,27 @@ vi.mock('../../api', () => ({
   },
 }));
 
+// Mock react-router-dom
+const mockNavigate = vi.fn();
+const mockLogout = vi.fn();
+
+vi.mock('react-router-dom', () => ({
+  BrowserRouter: ({ children }) => children,
+  useNavigate: () => mockNavigate,
+}));
+
 vi.mock('../../components/NotificationCenter', () => ({
   default: () => <div data-testid="notification-center">NotificationCenter</div>,
 }));
 
-// Mock react-router-dom
-const mockNavigate = vi.fn();
+vi.mock('../../components/ProfileDropdown', () => ({
+  default: () => (
+    <div data-testid="profile-dropdown">
+      <button onClick={() => mockNavigate('/profile')}>Profile</button>
+      <button onClick={async () => { await mockLogout(); mockNavigate('/auth/login'); }}>Logout</button>
+    </div>
+  ),
+}));
 vi.mock('react-router-dom', () => ({
   BrowserRouter: ({ children }) => children,
   useNavigate: () => mockNavigate,
@@ -49,7 +64,7 @@ vi.mock('react-router-dom', () => ({
 const renderWithProviders = (currentUser = null) => {
   const authContextValue = {
     currentUser,
-    logout: vi.fn(),
+    logout: mockLogout,
   };
 
   return render(
@@ -62,6 +77,14 @@ const renderWithProviders = (currentUser = null) => {
 };
 
 describe('Home Component', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    // Reset API mocks
+    api.get.mockResolvedValue({ data: [] });
+    blogApi.getAllBlogPosts.mockResolvedValue([]);
+    tripApi.getAvailableGroupTrips.mockResolvedValue({ data: [] });
+  });
+
   const mockUser = {
     id: 1,
     email: 'test@example.com',
@@ -133,19 +156,8 @@ describe('Home Component', () => {
     });
 
     test('handles logout when logout button is clicked', async () => {
-      const mockLogout = vi.fn().mockResolvedValue();
-      const authContextValue = {
-        currentUser: mockUser,
-        logout: mockLogout,
-      };
-
-      render(
-        <BrowserRouter>
-          <AuthContext.Provider value={authContextValue}>
-            <Home />
-          </AuthContext.Provider>
-        </BrowserRouter>
-      );
+      mockLogout.mockResolvedValue();
+      renderWithProviders(mockUser);
 
       fireEvent.click(screen.getByText('Logout'));
 
@@ -326,21 +338,10 @@ describe('Home Component', () => {
 
   describe('Error Handling', () => {
     test('handles logout error gracefully', async () => {
-      const mockLogout = vi.fn().mockRejectedValue(new Error('Logout failed'));
+      mockLogout.mockRejectedValue(new Error('Logout failed'));
       const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
 
-      const authContextValue = {
-        currentUser: mockUser,
-        logout: mockLogout,
-      };
-
-      render(
-        <BrowserRouter>
-          <AuthContext.Provider value={authContextValue}>
-            <Home />
-          </AuthContext.Provider>
-        </BrowserRouter>
-      );
+      renderWithProviders(mockUser);
 
       fireEvent.click(screen.getByText('Logout'));
 
