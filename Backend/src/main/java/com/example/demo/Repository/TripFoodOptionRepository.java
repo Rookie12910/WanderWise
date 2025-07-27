@@ -11,13 +11,13 @@ import java.util.UUID;
 
 @Repository
 public interface TripFoodOptionRepository extends JpaRepository<TripFoodOption, UUID> {
-      @Query(value = "SELECT r.name, '', r.lat, r.lon, 0, 0, 'restaurant', '', '', r.avg_cost, 'meal' " +
-                   "FROM travel_restaurants r " +
-                   "JOIN travel_spots s ON r.spot_id = s.id " +
-                   "JOIN travel_cities c ON s.city_id = c.id " +
-                   "WHERE LOWER(c.name) LIKE LOWER(CONCAT('%', :destination, '%')) " +
-                   "ORDER BY r.avg_cost ASC " +
-                   "LIMIT 15", 
-           nativeQuery = true)
-    List<Object[]> findFoodOptionsByDestination(@Param("destination") String destination);
+      @Query(value = "SELECT r.name, '', r.lat, r.lon, 0, 0, 'restaurant', '', r.image_url, r.avg_cost, 'meal' " +
+               "FROM travel_restaurants r " +
+               "JOIN travel_spots s ON r.spot_id = s.id " +
+               "JOIN travel_cities c ON s.city_id = c.id " +
+               "WHERE LOWER(c.name) LIKE LOWER(CONCAT('%', :destination, '%')) " +
+               "ORDER BY r.avg_cost ASC " +
+               "LIMIT 15", 
+       nativeQuery = true)
+List<Object[]> findFoodOptionsByDestination(@Param("destination") String destination);
 }
