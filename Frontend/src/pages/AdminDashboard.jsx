@@ -588,6 +588,10 @@ const handleUpdateCity = async (e) => {
               <h3>Featured Destinations</h3>
               <p className="stat-number">{destinations.length}</p>
             </div>
+            <div className="stat-card">
+              <h3>Blog Posts</h3>
+              <p className="stat-number">{blogs.length}</p>
+            </div>
             {/* ...other stat cards... */}
           </div>
         </div>
