@@ -48,7 +48,7 @@ const DestinationDetail = () => {
   return (
     <div className="detail-container">
       <div style={{ textAlign: 'left', width: '100%', marginBottom: '20px', clear: 'both' }}>
-        <button onClick={() => navigate(-1)} className="back-button" style={{ float: 'left' }}>
+        <button onClick={() => navigate(-1)} className="back-button-fix" style={{ float: 'left' }}>
           ← Back To Home
         </button>
         <div style={{ clear: 'both', height: '10px' }}></div>

@@ -246,7 +246,7 @@ const CreateTrip = () => {
           <p>You need to login first to create a trip.</p>
           <div className="auth-dialog-actions">
             <button onClick={handleLogin} className="btn-primary">Login</button>
-            <button onClick={() => navigate('/')} className="btn-outline">Go Back</button>
+            <button onClick={() => navigate('/')} className="btn-back-fix">Go Back</button>
           </div>
         </div>
       </div>
@@ -258,7 +258,7 @@ const CreateTrip = () => {
       {/* Header */}
       <header className="create-trip-header">
         <div className="header-content">
-          <button onClick={() => navigate('/')} className="back-button">
+          <button onClick={() => navigate('/')} className="back-button-rakesh">
             ← Back to Home
           </button>
           <div className="header-title">

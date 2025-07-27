@@ -16,7 +16,7 @@
   justify-content: flex-start;
 }
 
-.back-button {
+.back-button-fix {
   background: #f0f4ff;
   border: none;
   color: #4a80f0;
@@ -36,7 +36,7 @@
   left: 0;
 }
 
-.back-button:hover {
+.back-button-fix:hover {
   background-color: #e6edff;
   transform: translateX(-3px);
   box-shadow: 0 3px 8px rgba(0, 0, 0, 0.12);
