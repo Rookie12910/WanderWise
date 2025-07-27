@@ -1,0 +1,45 @@
+.home-trips-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 30px;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+
+.home-trip-card {
+  background-color: white;
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.08);
+  transition: all 0.3s ease;
+  cursor: pointer;
+  position: relative;
+  border: 1px solid rgba(0, 0, 0, 0.05);
+  min-width: 0;
+  max-width: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.home-trip-card-large {
+  max-width: 100%;
+  min-height: 420px;
+}
+
+.home-trips-grid-large {
+  gap: 40px;
+}
+
+@media (max-width: 1200px) {
+  .home-trips-grid {
+    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+    max-width: 900px;
+  }
+}
+@media (max-width: 900px) {
+  .home-trips-grid {
+    grid-template-columns: 1fr;
+    max-width: 350px;
+  }
+}

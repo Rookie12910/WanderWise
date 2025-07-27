@@ -61,49 +61,57 @@ const NotificationCenter = () => {
 
     // Weather suggestion modal state
     const [suggestionModal, setSuggestionModal] = useState({ open: false, message: '' });
+    const [suggestionLoading, setSuggestionLoading] = useState(false);
 
     // Weather suggestion modal JSX
     const renderSuggestionModal = () => {
-        if (!suggestionModal.open) return null;
+        if (!suggestionModal.open && !suggestionLoading) return null;
+        if (suggestionLoading) {
+            return ReactDOM.createPortal(
+                <div className="modal-overlay" style={{ zIndex: 100000 }}>
+                    <div className="modal-card" style={{ maxWidth: 400, minWidth: 220, border: '2px solid #00bcd4', boxShadow: '0 8px 32px rgba(0,188,212,0.18)', maxHeight: '40vh', overflow: 'hidden', padding: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
+                        <div style={{ margin: '40px 0 20px 0', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+                            <div className="spinner" style={{ border: '4px solid #e0f7fa', borderTop: '4px solid #00bcd4', borderRadius: '50%', width: 48, height: 48, animation: 'spin 1s linear infinite' }}></div>
+                            <div style={{ marginTop: 18, color: '#00796b', fontWeight: 600, fontSize: '1.1em' }}>Generating suggestion...</div>
+                        </div>
+                    </div>
+                    <style>{`@keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }`}</style>
+                </div>,
+                document.body
+            );
+        }
+        // ...existing code for showing the suggestion...
         // Split into sections by double newlines or section keywords
         let sections = suggestionModal.message.split(/\n\s*\n|(?=Packing recommendations:|Safety tips:|Local advice:|Closing advice:)/i).filter(Boolean);
-        // Remove all 'Final Advice' and 'Closing' sections
         let localAdviceContent = [];
         let filteredSections = [];
         for (let i = 0; i < sections.length; i++) {
             let section = sections[i];
-            // Remove stray asterisks and normalize whitespace
             section = section.replace(/\*+/g, '').replace(/\s+/g, ' ').trim();
-            if (/final advice|closing|encouraging note/i.test(section)) continue; // skip all Final Advice/Closing/Encouraging Note
+            if (/final advice|closing|encouraging note/i.test(section)) continue;
             if (/^local advice[:\s-]*/i.test(section)) {
-                // Remove heading and collect content
                 localAdviceContent.push(section.replace(/^local advice[:\s-]*/i, ''));
                 continue;
             }
             filteredSections.push(section);
         }
-        // Merge all Local Advice into one section if any found
         if (localAdviceContent.length > 0) {
             filteredSections.push('Local Advice: ' + localAdviceContent.join(' '));
         }
         sections = filteredSections;
-        // Helper to strip markdown and render bullet points
         const stripMarkdown = (str) => str.replace(/\*\*([^*]+)\*\*/g, '$1').replace(/\*([^*]+)\*/g, '$1').replace(/`([^`]+)`/g, '$1');
         const renderBullets = (text, sectionTitle = '') => {
             let cleanText = stripMarkdown(text).replace(/\*+/g, '').replace(/\s+/g, ' ').trim();
-            // Remove all repeated section titles (case-insensitive, anywhere in the text)
             if (sectionTitle) {
                 const regex = new RegExp(sectionTitle.replace(/[-/\\^$*+?.()|[\]{}]/g, '\\$&') + '[:\s-]*', 'gi');
                 cleanText = cleanText.replace(regex, '').trim();
             }
-            // Standardize bullets: split on lines starting with a bullet, dash, or numbered list
             const lines = cleanText.split(/\n[•\-\d+\.\s]/).map((l, i) => i === 0 ? l : '• ' + l);
             if (lines.length > 1) {
                 return <ul style={{ paddingLeft: 22, margin: 0 }}>{lines.map((line, idx) => <li key={idx}>{line.replace(/^• /, '').trim()}</li>)}</ul>;
             }
             return <span style={{ whiteSpace: 'pre-line' }}>{cleanText}</span>;
         };
-        // Section titles
         const getSectionTitle = (section) => {
             if (/packing/i.test(section)) return 'Packing Recommendations';
             if (/safety/i.test(section)) return 'Safety Tips';
@@ -453,6 +461,8 @@ const NotificationCenter = () => {
                                                                 className="weather-suggestion-btn"
                                                                 onClick={async e => {
                                                                     e.stopPropagation();
+                                                                    setSuggestionLoading(true);
+                                                                    setSuggestionModal({ open: true, message: '' });
                                                                     try {
                                                                         const tripId = notification.tripId;
                                                                         if (!tripId) throw new Error('Trip ID not found');
@@ -461,6 +471,8 @@ const NotificationCenter = () => {
                                                                         setSuggestionModal({ open: true, message: suggestion });
                                                                     } catch (err) {
                                                                         setSuggestionModal({ open: true, message: 'Failed to get suggestion.' });
+                                                                    } finally {
+                                                                        setSuggestionLoading(false);
                                                                     }
                                                                 }}
                                                                 title="Get Suggestions"

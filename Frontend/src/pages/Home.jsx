@@ -1,10 +1,11 @@
 import React, { useContext, useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import AuthContext from '../context/AuthContext';
-import api, { blogApi } from '../api';
+import api, { blogApi, tripApi } from '../api';
 import { FaStar } from 'react-icons/fa';
 import Navbar from '../components/Navbar';
 import '../styles/home.css';
+import '../styles/home-trips.css';
 
 const Home = () => {
   const { currentUser } = useContext(AuthContext);
@@ -15,6 +16,9 @@ const Home = () => {
   const [isLoadingBlogs, setIsLoadingBlogs] = useState(true); 
   const [error, setError] = useState(null);
   const [blogError, setBlogError] = useState(null); 
+  const [groupTrips, setGroupTrips] = useState([]);
+  const [isLoadingGroupTrips, setIsLoadingGroupTrips] = useState(true);
+  const [groupTripsError, setGroupTripsError] = useState(null);
   
   const effectiveUser = currentUser || (localStorage.getItem('currentUser') ? JSON.parse(localStorage.getItem('currentUser')) : null);
 
@@ -52,6 +56,25 @@ const Home = () => {
 
     fetchFeaturedDestinations();
     fetchBlogPosts();
+
+    const fetchGroupTrips = async () => {
+      try {
+        setIsLoadingGroupTrips(true);
+        setGroupTripsError(null);
+        const response = await tripApi.getAvailableGroupTrips();
+        setGroupTrips(response && response.data ? response.data : []);
+        setIsLoadingGroupTrips(false);
+      } catch (err) {
+        console.error('Error fetching group trips:', err);
+        setGroupTripsError('Failed to load group trips. Please try again later.');
+        setGroupTrips([]);
+        setIsLoadingGroupTrips(false);
+      }
+    };
+
+    fetchFeaturedDestinations();
+    fetchBlogPosts();
+    fetchGroupTrips();
   }, []);
 
   const navigateToCreateTrip = () => {
@@ -103,10 +126,10 @@ const Home = () => {
         )}
       </div>
       
-      {/* Rest of your existing Home component content remains the same */}
+
+      {/* Featured Destinations Section */}
       <div className="featured-section">
         <h2>Featured Destinations</h2>
-        
         {isLoading && (
           <div className="loading-container">
             <div className="loading-spinner"></div>
@@ -149,6 +172,90 @@ const Home = () => {
                 <p>No featured destinations available at the moment.</p>
               </div>
             )}
+          </div>
+        )}
+      </div>
+
+      {/* Group Trips Preview Section (Browse Style, 3 max, all buttons) */}
+      <div className="featured-section">
+        <h2>Group Trips</h2>
+        {isLoadingGroupTrips && (
+          <div className="loading-container">
+            <div className="loading-spinner"></div>
+            <p>Loading group trips...</p>
+          </div>
+        )}
+        {groupTripsError && (
+          <div className="error-message">{groupTripsError}</div>
+        )}
+        {!isLoadingGroupTrips && !groupTripsError && (
+      <div className="destination-cards">
+        {groupTrips.length > 0 ? (
+          groupTrips.slice(0, 3).map(trip => {
+            let parsedTripPlan = {};
+            if (typeof trip.tripPlan === 'string') {
+              try {
+                parsedTripPlan = JSON.parse(trip.tripPlan);
+              } catch (e) {
+                parsedTripPlan = {};
+              }
+            } else {
+              parsedTripPlan = trip.tripPlan || {};
+            }
+            return (
+              <div className="destination-card" key={trip.id}>
+                <div className="card-content">
+                  <h3 style={{textAlign:'center',fontWeight:'bold',fontSize:'1.3rem',marginBottom:'0.5rem'}}>{trip.groupName} <span className={`status-badge ${trip.status ? trip.status.toLowerCase() : ''}`}>{trip.status}</span></h3>
+                  <p style={{textAlign:'center',marginBottom:'1rem'}}>{trip.description}</p>
+                  <div style={{marginBottom:'1rem'}}>
+                    <b>From:</b> {parsedTripPlan?.trip_summary?.origin || 'N/A'}<br/>
+                    <b>To:</b> {parsedTripPlan?.trip_summary?.destination || 'N/A'}<br/>
+                    <b>Duration:</b> {parsedTripPlan?.trip_summary?.duration || 'N/A'} days<br/>
+                    <b>Start Date:</b> {parsedTripPlan?.trip_summary?.start_date || 'N/A'}<br/>
+                    <b>Budget:</b> ৳{parsedTripPlan?.trip_summary?.total_budget?.toLocaleString() || 'N/A'}
+                  </div>
+                  <div style={{marginBottom:'1rem',fontSize:'0.98rem',color:'#555'}}>
+                    Members: {trip.currentMembers}/{trip.maxPeople}<br/>
+                    Created by: {trip.creatorName || 'Unknown'}
+                  </div>
+                  <div style={{background:'#f8fafc',padding:'18px 0',borderRadius:'10px'}}>
+                    <button 
+                      className="btn-outline view-details"
+                      style={{marginBottom:'10px',width:'90%',fontWeight:'bold'}}
+                      onClick={e => { e.stopPropagation(); navigate(`/group-trips/${trip.id}`); }}
+                    >
+                      View Details
+                    </button>
+                    <button 
+                      className="btn btn-info"
+                      style={{marginBottom:'10px',width:'90%'}}
+                      onClick={e => { e.stopPropagation(); navigate(`/group-trips/${trip.id}?previewChat=1`); }}
+                    >
+                      💬 Preview Chat
+                    </button>
+                    <button 
+                      className="btn btn-primary"
+                      style={{width:'90%'}}
+                      onClick={e => { e.stopPropagation(); navigate(`/group-trips/${trip.id}?join=1`); }}
+                      disabled={trip.status !== 'OPEN'}
+                    >
+                      Request to Join
+                    </button>
+                  </div>
+                </div>
+              </div>
+            );
+          })
+        ) : (
+          <div className="no-trips-message">
+            <p>No group trips available at the moment.</p>
+          </div>
+        )}
+      </div>
+        )}
+        {!isLoadingGroupTrips && !groupTripsError && groupTrips.length > 3 && (
+          <div style={{ textAlign: 'center', marginTop: '1rem' }}>
+            <button className="btn-primary" onClick={() => navigate('/group-trips')}>Show All</button>
           </div>
         )}
       </div>
