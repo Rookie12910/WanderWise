@@ -193,12 +193,21 @@ const MyTrips = () => {
         </div>
         <div className="trip-actions">
           <button 
-            className="btn-outline"
+            className="btn-view-details"
             onClick={() => handleViewDetails(trip)}
             disabled={isDeleting}
           >
             View Details
           </button>
+          {trip.status === 'running' && (
+            <button 
+              className="btn-checklist"
+              onClick={() => navigate(`/checklist/${trip.id}`)}
+              disabled={isDeleting}
+            >
+              Checklist
+            </button>
+          )}
           <button 
             className="btn-group-trip"
             onClick={() => handleRequestGroupTrip(trip)}
@@ -214,14 +223,6 @@ const MyTrips = () => {
           >
             {isDeleting ? 'Deleting...' : 'Delete'}
           </button>
-          {trip.status === 'running' && (
-            <button 
-              className="btn-outline"
-              onClick={() => navigate(`/checklist/${trip.id}`)}
-            >
-              Checklist
-            </button>
-          )}
         </div>
       </div>
     );

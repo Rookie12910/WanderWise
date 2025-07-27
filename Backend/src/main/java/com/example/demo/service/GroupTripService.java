@@ -339,6 +339,54 @@ public class GroupTripService {
         }
     }
 
+    public ApiResponse<String> removeMember(UUID groupTripId, UUID memberId, UUID creatorId) {
+        try {
+            // Check if user is the creator of the group trip
+            GroupTrip groupTrip = groupTripRepository.findById(groupTripId)
+                    .orElseThrow(() -> new RuntimeException("Group trip not found"));
+
+            if (!groupTrip.getCreatedByUserId().equals(creatorId)) {
+                return ApiResponse.<String>builder()
+                        .success(false)
+                        .error("You are not authorized to manage this group trip")
+                        .build();
+            }
+
+            // Find the membership
+            GroupTripMember member = groupTripMemberRepository.findByGroupTripIdAndUserId(groupTripId, memberId)
+                    .orElseThrow(() -> new RuntimeException("Member not found in this group trip"));
+
+            // Make sure we're not removing the creator
+            if (memberId.equals(groupTrip.getCreatedByUserId())) {
+                return ApiResponse.<String>builder()
+                        .success(false)
+                        .error("Cannot remove the group trip creator")
+                        .build();
+            }
+
+            // Allow removing members with any status
+            // Delete the member record
+            groupTripMemberRepository.delete(member);
+            
+            // Only update member count if this was an accepted member
+            if (member.getStatus() == GroupTripMember.MemberStatus.ACCEPTED) {
+                groupTrip.setCurrentMembers(Math.max(1, groupTrip.getCurrentMembers() - 1));
+                groupTripRepository.save(groupTrip);
+            }
+            
+            return ApiResponse.<String>builder()
+                    .success(true)
+                    .message("Member removed successfully")
+                    .build();
+
+        } catch (Exception e) {
+            return ApiResponse.<String>builder()
+                    .success(false)
+                    .error("Failed to remove member: " + e.getMessage())
+                    .build();
+        }
+    }
+
     public ApiResponse<GroupTripResponse> getGroupTripDetails(UUID groupTripId, UUID userId) {
         try {
             GroupTrip groupTrip = groupTripRepository.findById(groupTripId)
