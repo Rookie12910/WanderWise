@@ -920,7 +920,7 @@ const handleUpdateCity = async (e) => {
                   onMouseOut={e => e.currentTarget.style.background = 'linear-gradient(90deg, #4f8cff 0%, #38c6ff 100%)'}
                   onClick={() => { setShowAddSpotForm(true); setSpotForm({ name: '', description: '', entry_fee: '', time_needed: '', best_time: '', lat: '', lon: '', image_url: '' }); }}
                 >
-                  ＋ Manage Spot
+                  ＋ Add Spot
                 </button>
               )}
               {(editSpot || showAddSpotForm) && (
