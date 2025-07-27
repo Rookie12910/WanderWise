@@ -385,6 +385,12 @@ export const tripApi = {
             console.error('Error updating checklist item:', error);
             throw error;
         }
+    },
+
+    // Admin: Get trip counts by city and status for all users
+    getCityStatusCountsForAllUsers: async () => {
+        const response = await api.get('/api/trip-plans/admin-city-status-counts');
+        return response.data.data;
     }
 };
 
@@ -424,6 +430,17 @@ export const adminApi = {
         }
     },
 
+    // Update a city
+    updateCity: async (cityId, cityData) => {
+        try {
+            const response = await api.put(`/api/admin/travel/cities/${cityId}`, cityData);
+            return response.data;
+        } catch (error) {
+            console.error('Error updating city:', error);
+            throw error;
+        }
+    },
+
     // Get all spots for a city
     getSpots: async (cityId) => {
         try {
@@ -442,6 +459,27 @@ export const adminApi = {
             return response.data;
         } catch (error) {
             console.error('Error adding spot:', error);
+            throw error;
+        }
+    },
+
+    // Update a spot
+    updateSpot: async (spotId, spotData) => {
+        try {
+            const response = await api.put(`/api/admin/travel/spots/${spotId}`, spotData);
+            return response.data;
+        } catch (error) {
+            console.error('Error updating spot:', error);
+            throw error;
+        }
+    },
+
+    // Delete a spot
+    deleteSpot: async (spotId) => {
+        try {
+            await api.delete(`/api/admin/travel/spots/${spotId}`);
+        } catch (error) {
+            console.error('Error deleting spot:', error);
             throw error;
         }
     },
@@ -468,6 +506,27 @@ export const adminApi = {
         }
     },
 
+    // Update a hotel
+    updateHotel: async (hotelId, hotelData) => {
+        try {
+            const response = await api.put(`/api/admin/travel/hotels/${hotelId}`, hotelData);
+            return response.data;
+        } catch (error) {
+            console.error('Error updating hotel:', error);
+            throw error;
+        }
+    },
+
+    // Delete a hotel
+    deleteHotel: async (hotelId) => {
+        try {
+            await api.delete(`/api/admin/travel/hotels/${hotelId}`);
+        } catch (error) {
+            console.error('Error deleting hotel:', error);
+            throw error;
+        }
+    },
+
     // Get all restaurants for a spot
     getRestaurants: async (spotId) => {
         try {
@@ -486,6 +545,27 @@ export const adminApi = {
             return response.data;
         } catch (error) {
             console.error('Error adding restaurant:', error);
+            throw error;
+        }
+    },
+
+    // Update a restaurant
+    updateRestaurant: async (restaurantId, restaurantData) => {
+        try {
+            const response = await api.put(`/api/admin/travel/restaurants/${restaurantId}`, restaurantData);
+            return response.data;
+        } catch (error) {
+            console.error('Error updating restaurant:', error);
+            throw error;
+        }
+    },
+
+    // Delete a restaurant
+    deleteRestaurant: async (restaurantId) => {
+        try {
+            await api.delete(`/api/admin/travel/restaurants/${restaurantId}`);
+        } catch (error) {
+            console.error('Error deleting restaurant:', error);
             throw error;
         }
     },

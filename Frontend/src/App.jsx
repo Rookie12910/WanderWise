@@ -21,91 +21,97 @@ import CheckList from './pages/CheckList'; // Import CheckList
 import MyBlogs from './pages/MyBlogs';
 import './styles/global.css';
 import './styles/buttons.css'; // Import global button styles
+import Footer from './components/Footer';
+import About from './pages/About';
+import Contact from './pages/Contact';
 
 function App() {
   return (
     <AuthProvider>
       <Router>
-        <Routes>
-          <Route path="/auth/login" element={<Login />} />
-          <Route path="/auth/signup" element={<Signup />} />
-          <Route path="/auth/verify-otp" element={<OtpVerification />} />
-          <Route path="/oauth-success" element={<OAuthSuccess />} />
-          <Route path="/" element={<Home />} />
-          <Route path="/destination/:id" element={<DestinationDetail />} />
-          <Route path="/my-blogs" element={<RequireAuth><MyBlogs /></RequireAuth>} />
-          
-          <Route 
-            path="/create-blog" 
-            element={
-              <RequireAuth>
-                <CreateBlog />
-              </RequireAuth>
-            } 
-          />
-          <Route path="/blog/:id" element={<BlogPostDetail />} /> {/* Public access */}
-          <Route path="/blog/edit/:id" element={<RequireAuth><EditBlog /></RequireAuth>} />
-
-          <Route 
-            path="/weather-details/:tripId" 
-            element={
-              <RequireAuth>
-                <WeatherDetails />
-              </RequireAuth>
-            } 
-          />
-          <Route 
-            path="/create-trip" 
-            element={
-              <RequireAuth>
-                <CreateTrip />
-              </RequireAuth>
-            } 
-          />
-          <Route 
-            path="/my-trips" 
-            element={
-              <RequireAuth>
-                <MyTrips />
-              </RequireAuth>
-            } 
-          />
-          
-          <Route 
-            path="/group-trips" 
-            element={
-              <RequireAuth>
-                <GroupTrips />
-              </RequireAuth>
-            } 
-          />
-          
-          <Route 
-            path="/profile" 
-            element={
-              <RequireAuth>
-                <Profile />
-              </RequireAuth>
-            } 
-          />
-          <Route 
-            path="/admin" 
-            element={
-              <RequireAuth adminOnly={true}>
-                <AdminDashboard />
-              </RequireAuth>
-            } 
-          />
-          <Route
-            path="/checklist/:tripId"
-            element={
-              <RequireAuth>
-                <CheckList />
-              </RequireAuth>
-            }
-          />
-          <Route path="*" element={<Navigate to="/" replace />} />
-        </Routes>
+        <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
+          <div style={{ flex: 1 }}>
+            <Routes>
+              <Route path="/auth/login" element={<Login />} />
+              <Route path="/auth/signup" element={<Signup />} />
+              <Route path="/auth/verify-otp" element={<OtpVerification />} />
+              <Route path="/oauth-success" element={<OAuthSuccess />} />
+              <Route path="/" element={<Home />} />
+              <Route path="/about" element={<About />} />
+              <Route path="/contact" element={<Contact />} />
+              <Route path="/destination/:id" element={<DestinationDetail />} />
+              <Route path="/my-blogs" element={<RequireAuth><MyBlogs /></RequireAuth>} />
+              <Route 
+                path="/create-blog" 
+                element={
+                  <RequireAuth>
+                    <CreateBlog />
+                  </RequireAuth>
+                } 
+              />
+              <Route path="/blog/:id" element={<BlogPostDetail />} /> {/* Public access */}
+              <Route path="/blog/edit/:id" element={<RequireAuth><EditBlog /></RequireAuth>} />
+              <Route 
+                path="/weather-details/:tripId" 
+                element={
+                  <RequireAuth>
+                    <WeatherDetails />
+                  </RequireAuth>
+                } 
+              />
+              <Route 
+                path="/create-trip" 
+                element={
+                  <RequireAuth>
+                    <CreateTrip />
+                  </RequireAuth>
+                } 
+              />
+              <Route 
+                path="/my-trips" 
+                element={
+                  <RequireAuth>
+                    <MyTrips />
+                  </RequireAuth>
+                } 
+              />
+              <Route 
+                path="/group-trips" 
+                element={
+                  <RequireAuth>
+                    <GroupTrips />
+                  </RequireAuth>
+                } 
+              />
+              <Route 
+                path="/profile" 
+                element={
+                  <RequireAuth>
+                    <Profile />
+                  </RequireAuth>
+                } 
+              />
+              <Route 
+                path="/admin" 
+                element={
+                  <RequireAuth adminOnly={true}>
+                    <AdminDashboard />
+                  </RequireAuth>
+                } 
+              />
+              <Route
+                path="/checklist/:tripId"
+                element={
+                  <RequireAuth>
+                    <CheckList />
+                  </RequireAuth>
+                }
+              />
+              <Route path="*" element={<Navigate to="/" replace />} />
+            </Routes>
+          </div>
+          <Footer />
+        </div>
       </Router>
     </AuthProvider>
   );

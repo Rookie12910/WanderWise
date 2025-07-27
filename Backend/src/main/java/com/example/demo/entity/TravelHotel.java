@@ -24,11 +24,13 @@ public class TravelHotel {
     @Column(nullable = false, length = 100)
     private String name;
 
+    @Column(name = "price_min")
     private Integer priceMin;
     public void setSpotId(Integer spotId) {
         this.spot = new TravelSpot();
         this.spot.setId(spotId);
     }
+    @Column(name = "price_max")
     private Integer priceMax;
 
     @Column

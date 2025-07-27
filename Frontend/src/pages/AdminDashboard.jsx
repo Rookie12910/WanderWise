@@ -2,12 +2,67 @@ import React, { useState, useEffect, useContext } from 'react';
 import { adminApi, tripApi } from '../api';
 import AuthContext from '../context/AuthContext';
 import { Navigate, useNavigate } from 'react-router-dom';
+import CityManager from '../components/CityManager';
 import '../styles/AdminDashboard.css';
 
 const AdminDashboard = () => {
   const { currentUser } = useContext(AuthContext);
   const navigate = useNavigate();
   const [activeSection, setActiveSection] = useState('dashboard');
+  const [tripStatusData, setTripStatusData] = useState([]);
+  const [tripStatusLoading, setTripStatusLoading] = useState(false);
+  const [tripStatusSort, setTripStatusSort] = useState({ key: 'city', direction: 'asc' });
+  useEffect(() => {
+    const fetchTripStatus = async () => {
+      if (activeSection !== 'trip-status') return;
+      setTripStatusLoading(true);
+      try {
+        // Fetch all cities
+        const cities = await adminApi.getAllCities();
+        // Fetch city-status counts for all users (admin)
+        const cityStatusCounts = await tripApi.getCityStatusCountsForAllUsers();
+        // Build city map for table
+        const cityMap = {};
+        cities.forEach(city => {
+          const counts = cityStatusCounts[city.name] || {};
+          cityMap[city.name] = {
+            city: city.name,
+            running: counts.running || 0,
+            upcoming: counts.upcoming || 0,
+            completed: counts.completed || 0,
+            group: counts.group || 0
+          };
+        });
+        setTripStatusData(Object.values(cityMap));
+      } catch (err) {
+        setTripStatusData([]);
+        setNotification && setNotification({ message: 'Failed to load trip status data', type: 'error' });
+      } finally {
+        setTripStatusLoading(false);
+      }
+    };
+    fetchTripStatus();
+  }, [activeSection]);
+  // Sorting for trip status table
+  const sortedTripStatusData = React.useMemo(() => {
+    const arr = [...tripStatusData];
+    arr.sort((a, b) => {
+      const { key, direction } = tripStatusSort;
+      if (a[key] < b[key]) return direction === 'asc' ? -1 : 1;
+      if (a[key] > b[key]) return direction === 'asc' ? 1 : -1;
+      return 0;
+    });
+    return arr;
+  }, [tripStatusData, tripStatusSort]);
+
+  const handleTripStatusSort = (key) => {
+    setTripStatusSort(prev => {
+      if (prev.key === key) {
+        return { key, direction: prev.direction === 'asc' ? 'desc' : 'asc' };
+      }
+      return { key, direction: 'asc' };
+    });
+  };
   const [destinations, setDestinations] = useState([]);
   const [blogs, setBlogs] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -106,18 +161,118 @@ const AdminDashboard = () => {
     };
     fetchHotelsAndRestaurants();
   }, [selectedSpot]);
-  // Handler stubs for travel data management
-  // Handler implementations for travel data management
-  const handleAddCity = async (e) => {
-    e.preventDefault();
-    try {
-      const newCity = await adminApi.addCity(cityForm);
-      setCities([...cities, newCity]);
-      setCityForm({ name: '', description: '' });
-    } catch (err) {
-      console.error('Error adding city:', err);
+
+
+// Add edit state and handlers for spot, hotel, restaurant
+const [editSpot, setEditSpot] = useState(null);
+const [editHotel, setEditHotel] = useState(null);
+const [editRestaurant, setEditRestaurant] = useState(null);
+// Add showAddSpotForm, showAddHotelForm, showAddRestaurantForm state
+const [showAddSpotForm, setShowAddSpotForm] = useState(false);
+const [showAddHotelForm, setShowAddHotelForm] = useState(false);
+const [showAddRestaurantForm, setShowAddRestaurantForm] = useState(false);
+
+const handleUpdateSpot = async (e) => {
+  e.preventDefault();
+  if (!editSpot) return;
+  try {
+    // Map snake_case to camelCase for backend
+    const mappedSpot = {
+      name: spotForm.name,
+      description: spotForm.description,
+      entryFee: spotForm.entry_fee,
+      timeNeeded: spotForm.time_needed,
+      bestTime: spotForm.best_time,
+      lat: spotForm.lat,
+      lon: spotForm.lon,
+      imageUrl: spotForm.image_url
+    };
+    await adminApi.updateSpot(editSpot.id, mappedSpot);
+    // Fetch latest spots from backend
+    if (selectedCity) {
+      const data = await adminApi.getSpots(selectedCity.id);
+      setSpots(data);
     }
-  };
+    setEditSpot(null);
+    setSpotForm({ name: '', description: '', entry_fee: '', time_needed: '', best_time: '', lat: '', lon: '', image_url: '' });
+  } catch (err) {
+    console.error('Error updating spot:', err);
+  }
+};
+
+const handleUpdateHotel = async (e) => {
+  e.preventDefault();
+  if (!editHotel) return;
+  try {
+    const mappedHotel = {
+      name: hotelForm.name,
+      priceMin: hotelForm.price_min,
+      priceMax: hotelForm.price_max,
+      rating: hotelForm.rating,
+      lat: hotelForm.lat,
+      lon: hotelForm.lon,
+      contact: hotelForm.contact,
+      imageUrl: hotelForm.image_url,
+      spotId: selectedSpot?.id
+    };
+    const updated = await adminApi.updateHotel(editHotel.id, mappedHotel);
+    setHotels(hotels.map(h => h.id === editHotel.id ? updated : h));
+    setEditHotel(null);
+    setHotelForm({ name: '', price_min: '', price_max: '', rating: '', lat: '', lon: '', contact: '', image_url: '' });
+    setNotification({ message: 'Hotel updated successfully!', type: 'success' });
+  } catch (err) {
+    console.error('Error updating hotel:', err);
+    setNotification({ message: 'Failed to update hotel', type: 'error' });
+  }
+};
+
+const handleUpdateRestaurant = async (e) => {
+  e.preventDefault();
+  if (!editRestaurant) return;
+  try {
+    const mappedRestaurant = {
+      name: restaurantForm.name,
+      popularDishes: restaurantForm.popular_dishes,
+      avgCost: restaurantForm.avg_cost,
+      lat: restaurantForm.lat,
+      lon: restaurantForm.lon,
+      imageUrl: restaurantForm.image_url
+    };
+    const updated = await adminApi.updateRestaurant(editRestaurant.id, mappedRestaurant);
+    setRestaurants(restaurants.map(r => r.id === editRestaurant.id ? updated : r));
+    setEditRestaurant(null);
+    setRestaurantForm({ name: '', popular_dishes: '', avg_cost: '', lat: '', lon: '', image_url: '' });
+    setNotification({ message: 'Restaurant updated successfully!', type: 'success' });
+  } catch (err) {
+    console.error('Error updating restaurant:', err);
+    setNotification({ message: 'Failed to update restaurant', type: 'error' });
+  }
+};
+
+// Handler implementations for travel data management
+const handleAddCity = async (e) => {
+  e.preventDefault();
+  try {
+    const newCity = await adminApi.addCity(cityForm);
+    setCities([...cities, newCity]);
+    setCityForm({ name: '', description: '' });
+  } catch (err) {
+    console.error('Error adding city:', err);
+  }
+};
+
+const handleUpdateCity = async (e) => {
+  e.preventDefault();
+  if (!selectedCity) return;
+  try {
+    const updated = await adminApi.updateCity(selectedCity.id, cityForm);
+    setCities(cities.map(city => city.id === selectedCity.id ? updated : city));
+    setSelectedCity(updated);
+    setCityForm({ name: '', description: '' });
+  } catch (err) {
+    console.error('Error updating city:', err);
+  }
+};
 
   const handleAddSpot = async (e) => {
     e.preventDefault();
@@ -354,7 +509,25 @@ const AdminDashboard = () => {
 
   return (
     <div className="admin-dashboard">
-      
+      {notification && (
+        <div style={{
+          position: 'fixed',
+          top: 20,
+          right: 20,
+          zIndex: 9999,
+          background: notification.type === 'success' ? '#4caf50' : '#f44336',
+          color: '#fff',
+          padding: '12px 24px',
+          borderRadius: 8,
+          boxShadow: '0 2px 8px rgba(0,0,0,0.15)',
+          fontWeight: 600,
+          fontSize: 16,
+        }}>
+          {notification.message}
+          <button style={{ marginLeft: 16, background: 'transparent', color: '#fff', border: 'none', fontWeight: 700, fontSize: 18, cursor: 'pointer' }} onClick={() => setNotification(null)}>&times;</button>
+        </div>
+      )}
+
       {/* Admin Navigation Header */}
       <div className="admin-navigation">
         <div className="admin-nav-left">
@@ -369,7 +542,7 @@ const AdminDashboard = () => {
           </button>
         </div>
       </div>
-      
+
       {/* Admin Menu */}
       <div className="admin-menu">
         <button 
@@ -384,55 +557,42 @@ const AdminDashboard = () => {
         >
           Manage Featured Destinations
         </button>
-        
         <button 
           className={`admin-menu-item ${activeSection === 'blogs' ? 'active' : ''}`}
           onClick={() => setActiveSection('blogs')}
         >
           Manage Blog Posts
         </button>
-
         <button
           className={`admin-menu-item ${activeSection === 'add spot' ? 'active' : ''}`}
           onClick={() => setActiveSection('add spot')}
         >
-          Add New Spot
-         </button>
-         
+          Manage Spot
+        </button>
+        <button
+          className={`admin-menu-item ${activeSection === 'trip-status' ? 'active' : ''}`}
+          onClick={() => setActiveSection('trip-status')}
+        >
+          Trip Status by City
+        </button>
         {/* Add more menu items here as needed */}
       </div>
 
-      {notification && (
-        <div className={`notification ${notification.type}`}>
-          {notification.message}
-        </div>
-      )}
-
-      {error && <div className="error-message">{error}</div>}
-
-      {/* Dashboard Content Based on Selected Section */}
+      {/* Section Content Below Menu */}
       {activeSection === 'dashboard' && (
         <div className="dashboard-overview">
           <h2>Welcome to the Admin Dashboard</h2>
           <p>Select an option from the menu above to manage different aspects of your website.</p>
-          
           <div className="dashboard-stats">
             <div className="stat-card">
               <h3>Featured Destinations</h3>
               <p className="stat-number">{destinations.length}</p>
             </div>
-
-            <div className="stat-card">
-              <h3>Blog Posts</h3>
-              <p className="stat-number">{blogs.length}</p>
-            </div>
-          
+            {/* ...other stat cards... */}
           </div>
-          
         </div>
       )}
 
-      {/* Featured Destinations Management Section */}
       {activeSection === 'destinations' && (
         <div className="section-content">
           <div className="section-header">
@@ -445,7 +605,6 @@ const AdminDashboard = () => {
               Add New Destination
             </button>
           </div>
-          
           {loading ? (
             <div className="loading">Loading destinations...</div>
           ) : (
@@ -511,6 +670,78 @@ const AdminDashboard = () => {
           )}
         </div>
       )}
+
+      {activeSection === 'blogs' && (
+        <div className="section-content">
+          {/* ...existing blogs management code... */}
+        </div>
+      )}
+
+      {activeSection === 'add spot' && (
+        <div className="section-content">
+          {/* ...existing spot management code... */}
+        </div>
+      )}
+
+      {activeSection === 'trip-status' && (
+        <div className="section-content">
+          <div className="section-header">
+            <h2>Trips Overview by City</h2>
+          </div>
+          {tripStatusLoading ? (
+            <div className="loading">Loading trip status data...</div>
+          ) : (
+            <div className="destinations-table-container">
+              <table className="destinations-table">
+                <thead>
+                  <tr>
+                    <th style={{cursor:'pointer'}} onClick={() => handleTripStatusSort('city')}>City {tripStatusSort.key==='city' ? (tripStatusSort.direction==='asc'?'▲':'▼') : ''}</th>
+                    <th style={{cursor:'pointer'}} onClick={() => handleTripStatusSort('running')}>Running {tripStatusSort.key==='running' ? (tripStatusSort.direction==='asc'?'▲':'▼') : ''}</th>
+                    <th style={{cursor:'pointer'}} onClick={() => handleTripStatusSort('upcoming')}>Upcoming {tripStatusSort.key==='upcoming' ? (tripStatusSort.direction==='asc'?'▲':'▼') : ''}</th>
+                    <th style={{cursor:'pointer'}} onClick={() => handleTripStatusSort('completed')}>Completed {tripStatusSort.key==='completed' ? (tripStatusSort.direction==='asc'?'▲':'▼') : ''}</th>
+                    <th style={{cursor:'pointer'}} onClick={() => handleTripStatusSort('group')}>Group Tour {tripStatusSort.key==='group' ? (tripStatusSort.direction==='asc'?'▲':'▼') : ''}</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {sortedTripStatusData.length === 0 ? (
+                    <tr><td colSpan="5" className="no-destinations">No data found</td></tr>
+                  ) : (
+                    <>
+                      {sortedTripStatusData.map(row => (
+                        <tr key={row.city}>
+                          <td>{row.city}</td>
+                          <td>{row.running}</td>
+                          <td>{row.upcoming}</td>
+                          <td>{row.completed}</td>
+                          <td>{row.group}</td>
+                        </tr>
+                      ))}
+                      {/* Total row */}
+                      <tr style={{ fontWeight: 'bold', background: '#f5f5f5' }}>
+                        <td>Total</td>
+                        <td>{sortedTripStatusData.reduce((sum, row) => sum + (row.running || 0), 0)}</td>
+                        <td>{sortedTripStatusData.reduce((sum, row) => sum + (row.upcoming || 0), 0)}</td>
+                        <td>{sortedTripStatusData.reduce((sum, row) => sum + (row.completed || 0), 0)}</td>
+                        <td>{sortedTripStatusData.reduce((sum, row) => sum + (row.group || 0), 0)}</td>
+                      </tr>
+                    </>
+                  )}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </div>
+      )}
+
+      {notification && (
+        <div className={`notification ${notification.type}`}>
+          {notification.message}
+        </div>
+      )}
+
+      {error && <div className="error-message">{error}</div>}
+
+    {/* Add New Destination Modal and other modals/content below... */}
       {/* Add New Destination Modal */}
       {isModalOpen && (
         <div className="modal-overlay">
@@ -642,91 +873,244 @@ const AdminDashboard = () => {
           <div className="section-header">
             <h2>Travel Data Management</h2>
           </div>
-          {/* Add City */}
-          <form onSubmit={handleAddCity} className="travel-form">
-            <h3>Add City</h3>
-            <input type="text" placeholder="City Name" value={cityForm.name} onChange={e => setCityForm({ ...cityForm, name: e.target.value })} required />
-            <textarea placeholder="Description" value={cityForm.description} onChange={e => setCityForm({ ...cityForm, description: e.target.value })} required />
-            <button type="submit">Add City</button>
-          </form>
-          {/* List Cities */}
-          <h3>Cities</h3>
-          <ul>
-            {cities.map(city => (
-              <li key={city.id}>
-                <button onClick={() => setSelectedCity(city)}>{city.name}</button>
-              </li>
-            ))}
-          </ul>
-          {/* City details */}
-          {selectedCity && (
-            <div className="city-details">
-              <h4>City Details</h4>
-              <p><strong>Name:</strong> {selectedCity.name}</p>
-              <p><strong>Description:</strong> {selectedCity.description}</p>
-              {/* You can add more details here, e.g. spots, etc. */}
-            </div>
-          )}
-          {/* Spots for selected city */}
+          {/* Professional City CRUD UI */}
+          <CityManager
+            cities={cities}
+            selectedCity={selectedCity}
+            onAdd={async (form) => {
+              try {
+                const newCity = await adminApi.addCity(form);
+                setCities([...cities, newCity]);
+              } catch (err) {
+                console.error('Error adding city:', err);
+              }
+            }}
+            onUpdate={async (id, form) => {
+              try {
+                const updated = await adminApi.updateCity(id, form);
+                setCities(cities.map(city => city.id === id ? updated : city));
+                setSelectedCity(updated);
+              } catch (err) {
+                console.error('Error updating city:', err);
+              }
+            }}
+            onSelect={setSelectedCity}
+          />
+
+          {/* Spots for selected city - CRUD UI */}
           {selectedCity && (
             <div>
               <h3>Spots in {selectedCity.name}</h3>
-              <form onSubmit={handleAddSpot} className="travel-form">
-                <input type="text" placeholder="Spot Name" value={spotForm.name} onChange={e => setSpotForm({ ...spotForm, name: e.target.value })} required />
-                <textarea placeholder="Description" value={spotForm.description} onChange={e => setSpotForm({ ...spotForm, description: e.target.value })} required />
-                <input type="number" placeholder="Entry Fee" value={spotForm.entry_fee} onChange={e => setSpotForm({ ...spotForm, entry_fee: e.target.value })} />
-                <input type="number" placeholder="Time Needed (hrs)" value={spotForm.time_needed} onChange={e => setSpotForm({ ...spotForm, time_needed: e.target.value })} />
-                <input type="text" placeholder="Best Time" value={spotForm.best_time} onChange={e => setSpotForm({ ...spotForm, best_time: e.target.value })} />
-                <input type="number" step="any" placeholder="Latitude" value={spotForm.lat} onChange={e => setSpotForm({ ...spotForm, lat: e.target.value })} />
-                <input type="number" step="any" placeholder="Longitude" value={spotForm.lon} onChange={e => setSpotForm({ ...spotForm, lon: e.target.value })} />
-                <input type="text" placeholder="Image URL" value={spotForm.image_url} onChange={e => setSpotForm({ ...spotForm, image_url: e.target.value })} />
-                <button type="submit">Add Spot</button>
-              </form>
+              {(!editSpot && !showAddSpotForm) && (
+                <button
+                  style={{
+                    marginBottom: 12,
+                    background: 'linear-gradient(90deg, #4f8cff 0%, #38c6ff 100%)',
+                    color: '#fff',
+                    border: 'none',
+                    borderRadius: 6,
+                    padding: '8px 24px',
+                    fontWeight: 600,
+                    fontSize: 16,
+                    boxShadow: '0 2px 8px rgba(80,180,255,0.10)',
+                    cursor: 'pointer',
+                    transition: 'background 0.2s',
+                  }}
+                  onMouseOver={e => e.currentTarget.style.background = 'linear-gradient(90deg, #38c6ff 0%, #4f8cff 100%)'}
+                  onMouseOut={e => e.currentTarget.style.background = 'linear-gradient(90deg, #4f8cff 0%, #38c6ff 100%)'}
+                  onClick={() => { setShowAddSpotForm(true); setSpotForm({ name: '', description: '', entry_fee: '', time_needed: '', best_time: '', lat: '', lon: '', image_url: '' }); }}
+                >
+                  ＋ Manage Spot
+                </button>
+              )}
+              {(editSpot || showAddSpotForm) && (
+                <form onSubmit={editSpot ? handleUpdateSpot : handleAddSpot} className="travel-form">
+                  <input type="text" placeholder="Spot Name" value={spotForm.name} onChange={e => setSpotForm({ ...spotForm, name: e.target.value })} required />
+                  <textarea placeholder="Description" value={spotForm.description} onChange={e => setSpotForm({ ...spotForm, description: e.target.value })} required />
+                  <input type="number" placeholder="Entry Fee" value={spotForm.entry_fee} onChange={e => setSpotForm({ ...spotForm, entry_fee: e.target.value })} />
+                  <input type="number" placeholder="Time Needed (hrs)" value={spotForm.time_needed} onChange={e => setSpotForm({ ...spotForm, time_needed: e.target.value })} />
+                  <input type="text" placeholder="Best Time" value={spotForm.best_time} onChange={e => setSpotForm({ ...spotForm, best_time: e.target.value })} />
+                  <input type="number" step="any" placeholder="Latitude" value={spotForm.lat} onChange={e => setSpotForm({ ...spotForm, lat: e.target.value })} />
+                  <input type="number" step="any" placeholder="Longitude" value={spotForm.lon} onChange={e => setSpotForm({ ...spotForm, lon: e.target.value })} />
+                  <input type="text" placeholder="Image URL" value={spotForm.image_url} onChange={e => setSpotForm({ ...spotForm, image_url: e.target.value })} />
+                  {editSpot && (
+                    <>
+                      <button type="submit">Update Spot</button>
+                      <button type="button" style={{marginLeft:8,background:'#eee',color:'#333',border:'1px solid #bbb',borderRadius:4,padding:'6px 16px',fontWeight:500}} onClick={() => { setEditSpot(null); setSpotForm({ name: '', description: '', entry_fee: '', time_needed: '', best_time: '', lat: '', lon: '', image_url: '' }); }}>Cancel</button>
+                    </>
+                  )}
+                  {showAddSpotForm && !editSpot && (
+                    <>
+                      <button type="submit">Add Spot</button>
+                      <button type="button" style={{marginLeft:8,background:'#eee',color:'#333',border:'1px solid #bbb',borderRadius:4,padding:'6px 16px',fontWeight:500}} onClick={() => { setShowAddSpotForm(false); setSpotForm({ name: '', description: '', entry_fee: '', time_needed: '', best_time: '', lat: '', lon: '', image_url: '' }); }}>Cancel</button>
+                    </>
+                  )}
+                </form>
+              )}
               <ul>
                 {spots.map(spot => (
                   <li key={spot.id}>
-                    <button onClick={() => setSelectedSpot(spot)}>{spot.name}</button>
+                    <span style={{marginRight:8}}>{spot.name}</span>
+                    <button onClick={() => {
+                      console.log('Editing spot:', spot);
+                      setEditSpot(spot);
+                      setShowAddSpotForm(false);
+                      setSpotForm({
+                        name: spot.name != null ? String(spot.name) : '',
+                        description: spot.description != null ? String(spot.description) : '',
+                        entry_fee: spot.entryFee != null ? String(spot.entryFee) : (spot.entry_fee != null ? String(spot.entry_fee) : ''),
+                        time_needed: spot.timeNeeded != null ? String(spot.timeNeeded) : (spot.time_needed != null ? String(spot.time_needed) : ''),
+                        best_time: spot.bestTime != null ? String(spot.bestTime) : (spot.best_time != null ? String(spot.best_time) : ''),
+                        lat: spot.lat != null ? String(spot.lat) : '',
+                        lon: spot.lon != null ? String(spot.lon) : '',
+                        image_url: spot.imageUrl != null ? String(spot.imageUrl) : (spot.image_url != null ? String(spot.image_url) : '')
+                      });
+                    }}>Edit</button>
+                    <button style={{marginLeft:4}} onClick={async () => { if(window.confirm('Delete this spot?')) { await adminApi.deleteSpot(spot.id); setSpots(spots.filter(s => s.id !== spot.id)); if(selectedSpot && selectedSpot.id === spot.id) setSelectedSpot(null); } }}>Delete</button>
+                    <button style={{marginLeft:4}} onClick={() => setSelectedSpot(spot)}>Details</button>
                   </li>
                 ))}
               </ul>
             </div>
           )}
-          {/* Hotels and Restaurants for selected spot */}
+          {/* Hotels and Restaurants for selected spot - CRUD UI */}
           {selectedSpot && (
             <div>
               <h3>Hotels for {selectedSpot.name}</h3>
-              <form onSubmit={handleAddHotel} className="travel-form">
-                <input type="text" placeholder="Hotel Name" value={hotelForm.name} onChange={e => setHotelForm({ ...hotelForm, name: e.target.value })} required />
-                <input type="number" placeholder="Price Min" value={hotelForm.price_min} onChange={e => setHotelForm({ ...hotelForm, price_min: e.target.value })} />
-                <input type="number" placeholder="Price Max" value={hotelForm.price_max} onChange={e => setHotelForm({ ...hotelForm, price_max: e.target.value })} />
-                <input type="number" step="any" placeholder="Rating" value={hotelForm.rating} onChange={e => setHotelForm({ ...hotelForm, rating: e.target.value })} />
-                <input type="number" step="any" placeholder="Latitude" value={hotelForm.lat} onChange={e => setHotelForm({ ...hotelForm, lat: e.target.value })} />
-                <input type="number" step="any" placeholder="Longitude" value={hotelForm.lon} onChange={e => setHotelForm({ ...hotelForm, lon: e.target.value })} />
-                <input type="text" placeholder="Contact" value={hotelForm.contact} onChange={e => setHotelForm({ ...hotelForm, contact: e.target.value })} />
-                <input type="text" placeholder="Image URL" value={hotelForm.image_url} onChange={e => setHotelForm({ ...hotelForm, image_url: e.target.value })} />
-                <button type="submit">Add Hotel</button>
-              </form>
+              {(!editHotel && !showAddHotelForm) && (
+                <button
+                  style={{
+                    marginBottom: 12,
+                    background: 'linear-gradient(90deg, #4f8cff 0%, #38c6ff 100%)',
+                    color: '#fff',
+                    border: 'none',
+                    borderRadius: 6,
+                    padding: '8px 24px',
+                    fontWeight: 600,
+                    fontSize: 16,
+                    boxShadow: '0 2px 8px rgba(80,180,255,0.10)',
+                    cursor: 'pointer',
+                    transition: 'background 0.2s',
+                  }}
+                  onMouseOver={e => e.currentTarget.style.background = 'linear-gradient(90deg, #38c6ff 0%, #4f8cff 100%)'}
+                  onMouseOut={e => e.currentTarget.style.background = 'linear-gradient(90deg, #4f8cff 0%, #38c6ff 100%)'}
+                  onClick={() => { setShowAddHotelForm(true); setHotelForm({ name: '', price_min: '', price_max: '', rating: '', lat: '', lon: '', contact: '', image_url: '' }); }}
+                >
+                  ＋ Add Hotel
+                </button>
+              )}
+              {(editHotel || showAddHotelForm) && (
+                <form onSubmit={editHotel ? handleUpdateHotel : handleAddHotel} className="travel-form">
+                  <input type="text" placeholder="Hotel Name" value={hotelForm.name} onChange={e => setHotelForm({ ...hotelForm, name: e.target.value })} required />
+                  <input type="number" placeholder="Price Min" value={hotelForm.price_min} onChange={e => setHotelForm({ ...hotelForm, price_min: e.target.value })} />
+                  <input type="number" placeholder="Price Max" value={hotelForm.price_max} onChange={e => setHotelForm({ ...hotelForm, price_max: e.target.value })} />
+                  <input type="number" step="any" placeholder="Rating" value={hotelForm.rating} onChange={e => setHotelForm({ ...hotelForm, rating: e.target.value })} />
+                  <input type="number" step="any" placeholder="Latitude" value={hotelForm.lat} onChange={e => setHotelForm({ ...hotelForm, lat: e.target.value })} />
+                  <input type="number" step="any" placeholder="Longitude" value={hotelForm.lon} onChange={e => setHotelForm({ ...hotelForm, lon: e.target.value })} />
+                  <input type="text" placeholder="Contact" value={hotelForm.contact} onChange={e => setHotelForm({ ...hotelForm, contact: e.target.value })} />
+                  <input type="text" placeholder="Image URL" value={hotelForm.image_url} onChange={e => setHotelForm({ ...hotelForm, image_url: e.target.value })} />
+                  {editHotel && (
+                    <>
+                      <button type="submit">Update Hotel</button>
+                      <button type="button" style={{marginLeft:8,background:'#eee',color:'#333',border:'1px solid #bbb',borderRadius:4,padding:'6px 16px',fontWeight:500}} onClick={() => { setEditHotel(null); setHotelForm({ name: '', price_min: '', price_max: '', rating: '', lat: '', lon: '', contact: '', image_url: '' }); }}>Cancel</button>
+                    </>
+                  )}
+                  {showAddHotelForm && !editHotel && (
+                    <>
+                      <button type="submit">Add Hotel</button>
+                      <button type="button" style={{marginLeft:8,background:'#eee',color:'#333',border:'1px solid #bbb',borderRadius:4,padding:'6px 16px',fontWeight:500}} onClick={() => { setShowAddHotelForm(false); setHotelForm({ name: '', price_min: '', price_max: '', rating: '', lat: '', lon: '', contact: '', image_url: '' }); }}>Cancel</button>
+                    </>
+                  )}
+                </form>
+              )}
               <ul>
                 {hotels.map(hotel => (
-                  <li key={hotel.id}>{hotel.name}</li>
+                  <li key={hotel.id}>
+                    <span style={{marginRight:8}}>{hotel.name}</span>
+                    <button onClick={() => {
+                      setEditHotel(hotel);
+                      setShowAddHotelForm(false);
+                      setHotelForm({
+                        name: hotel.name != null ? String(hotel.name) : '',
+                        price_min: hotel.priceMin != null ? String(hotel.priceMin) : (hotel.price_min != null ? String(hotel.price_min) : ''),
+                        price_max: hotel.priceMax != null ? String(hotel.priceMax) : (hotel.price_max != null ? String(hotel.price_max) : ''),
+                        rating: hotel.rating != null ? String(hotel.rating) : '',
+                        lat: hotel.lat != null ? String(hotel.lat) : '',
+                        lon: hotel.lon != null ? String(hotel.lon) : '',
+                        contact: hotel.contact != null ? String(hotel.contact) : '',
+                        image_url: hotel.imageUrl != null ? String(hotel.imageUrl) : (hotel.image_url != null ? String(hotel.image_url) : '')
+                      });
+                    }}>Edit</button>
+                    <button style={{marginLeft:4}} onClick={async () => { if(window.confirm('Delete this hotel?')) { await adminApi.deleteHotel(hotel.id); setHotels(hotels.filter(h => h.id !== hotel.id)); } }}>Delete</button>
+                  </li>
                 ))}
               </ul>
               <h3>Restaurants for {selectedSpot.name}</h3>
-              <form onSubmit={handleAddRestaurant} className="travel-form">
-                <input type="text" placeholder="Restaurant Name" value={restaurantForm.name} onChange={e => setRestaurantForm({ ...restaurantForm, name: e.target.value })} required />
-                <input type="text" placeholder="Popular Dishes" value={restaurantForm.popular_dishes} onChange={e => setRestaurantForm({ ...restaurantForm, popular_dishes: e.target.value })} />
-                <input type="number" placeholder="Avg Cost" value={restaurantForm.avg_cost} onChange={e => setRestaurantForm({ ...restaurantForm, avg_cost: e.target.value })} />
-                <input type="number" step="any" placeholder="Latitude" value={restaurantForm.lat} onChange={e => setRestaurantForm({ ...restaurantForm, lat: e.target.value })} />
-                <input type="number" step="any" placeholder="Longitude" value={restaurantForm.lon} onChange={e => setRestaurantForm({ ...restaurantForm, lon: e.target.value })} />
-                <input type="text" placeholder="Image URL" value={restaurantForm.image_url} onChange={e => setRestaurantForm({ ...restaurantForm, image_url: e.target.value })} />
-                <button type="submit">Add Restaurant</button>
-              </form>
+              {(!editRestaurant && !showAddRestaurantForm) && (
+                <button
+                  style={{
+                    marginBottom: 12,
+                    background: 'linear-gradient(90deg, #4f8cff 0%, #38c6ff 100%)',
+                    color: '#fff',
+                    border: 'none',
+                    borderRadius: 6,
+                    padding: '8px 24px',
+                    fontWeight: 600,
+                    fontSize: 16,
+                    boxShadow: '0 2px 8px rgba(80,180,255,0.10)',
+                    cursor: 'pointer',
+                    transition: 'background 0.2s',
+                  }}
+                  onMouseOver={e => e.currentTarget.style.background = 'linear-gradient(90deg, #38c6ff 0%, #4f8cff 100%)'}
+                  onMouseOut={e => e.currentTarget.style.background = 'linear-gradient(90deg, #4f8cff 0%, #38c6ff 100%)'}
+                  onClick={() => { setShowAddRestaurantForm(true); setRestaurantForm({ name: '', popular_dishes: '', avg_cost: '', lat: '', lon: '', image_url: '' }); }}
+                >
+                  ＋ Add Restaurant
+                </button>
+              )}
+              {(editRestaurant || showAddRestaurantForm) && (
+                <form onSubmit={editRestaurant ? handleUpdateRestaurant : handleAddRestaurant} className="travel-form">
+                  <input type="text" placeholder="Restaurant Name" value={restaurantForm.name} onChange={e => setRestaurantForm({ ...restaurantForm, name: e.target.value })} required />
+                  <input type="text" placeholder="Popular Dishes" value={restaurantForm.popular_dishes} onChange={e => setRestaurantForm({ ...restaurantForm, popular_dishes: e.target.value })} />
+                  <input type="number" placeholder="Avg Cost" value={restaurantForm.avg_cost} onChange={e => setRestaurantForm({ ...restaurantForm, avg_cost: e.target.value })} />
+                  <input type="number" step="any" placeholder="Latitude" value={restaurantForm.lat} onChange={e => setRestaurantForm({ ...restaurantForm, lat: e.target.value })} />
+                  <input type="number" step="any" placeholder="Longitude" value={restaurantForm.lon} onChange={e => setRestaurantForm({ ...restaurantForm, lon: e.target.value })} />
+                  <input type="text" placeholder="Image URL" value={restaurantForm.image_url} onChange={e => setRestaurantForm({ ...restaurantForm, image_url: e.target.value })} />
+                  {editRestaurant && (
+                    <>
+                      <button type="submit">Update Restaurant</button>
+                      <button type="button" style={{marginLeft:8,background:'#eee',color:'#333',border:'1px solid #bbb',borderRadius:4,padding:'6px 16px',fontWeight:500}} onClick={() => { setEditRestaurant(null); setRestaurantForm({ name: '', popular_dishes: '', avg_cost: '', lat: '', lon: '', image_url: '' }); }}>Cancel</button>
+                    </>
+                  )}
+                  {showAddRestaurantForm && !editRestaurant && (
+                    <>
+                      <button type="submit">Add Restaurant</button>
+                      <button type="button" style={{marginLeft:8,background:'#eee',color:'#333',border:'1px solid #bbb',borderRadius:4,padding:'6px 16px',fontWeight:500}} onClick={() => { setShowAddRestaurantForm(false); setRestaurantForm({ name: '', popular_dishes: '', avg_cost: '', lat: '', lon: '', image_url: '' }); }}>Cancel</button>
+                    </>
+                  )}
+                </form>
+              )}
               <ul>
                 {restaurants.map(rest => (
-                  <li key={rest.id}>{rest.name}</li>
+                  <li key={rest.id}>
+                    <span style={{marginRight:8}}>{rest.name}</span>
+                    <button onClick={() => {
+                      setEditRestaurant(rest);
+                      setShowAddRestaurantForm(false);
+                      setRestaurantForm({
+                        name: rest.name != null ? String(rest.name) : '',
+                        popular_dishes: rest.popularDishes != null ? String(rest.popularDishes) : (rest.popular_dishes != null ? String(rest.popular_dishes) : ''),
+                        avg_cost: rest.avgCost != null ? String(rest.avgCost) : (rest.avg_cost != null ? String(rest.avg_cost) : ''),
+                        lat: rest.lat != null ? String(rest.lat) : '',
+                        lon: rest.lon != null ? String(rest.lon) : '',
+                        image_url: rest.imageUrl != null ? String(rest.imageUrl) : (rest.image_url != null ? String(rest.image_url) : '')
+                      });
+                    }}>Edit</button>
+                    <button style={{marginLeft:4}} onClick={async () => { if(window.confirm('Delete this restaurant?')) { await adminApi.deleteRestaurant(rest.id); setRestaurants(restaurants.filter(r => r.id !== rest.id)); } }}>Delete</button>
+                  </li>
                 ))}
               </ul>
-              </div>
+            </div>
           )}
         </div>
       )}

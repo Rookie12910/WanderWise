@@ -30,11 +30,16 @@ public class TravelSpot {
     }
     private String description;
 
+
+    @Column(name = "entry_fee")
     private Integer entryFee;
+
+    @Column(name = "time_needed")
     private Integer timeNeeded;
 
-    @Column(length = 100)
+    @Column(name = "best_time", length = 100)
     private String bestTime;
+
 
     private Double lat;
     private Double lon;

@@ -404,4 +404,21 @@ public class TripPlanController {
             ));
         }
     }
+    
+    // --- Admin: Get trip counts by city and status for all users ---
+    @GetMapping("/admin-city-status-counts")
+    public ResponseEntity<?> getCityStatusCountsForAllUsers() {
+        try {
+            Map<String, Map<String, Integer>> data = tripPlanService.getCityStatusCountsForAllUsers();
+            return ResponseEntity.ok(Map.of(
+                "success", true,
+                "data", data
+            ));
+        } catch (Exception e) {
+            return ResponseEntity.status(500).body(Map.of(
+                "success", false,
+                "error", e.getMessage()
+            ));
+        }
+    }
 }

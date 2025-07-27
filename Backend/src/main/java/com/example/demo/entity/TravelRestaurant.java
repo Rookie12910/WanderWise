@@ -29,8 +29,10 @@ public class TravelRestaurant {
         this.spot = new TravelSpot();
         this.spot.setId(spotId);
     }
+    @Column(name = "popular_dishes")
     private String popularDishes;
 
+    @Column(name = "avg_cost")
     private Integer avgCost;
     private Double lat;
     private Double lon;

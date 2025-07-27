@@ -28,6 +28,9 @@ import java.util.UUID;
 public class TripPlanService {
 
     @Autowired
+    private com.example.demo.Repository.GroupTripRepository groupTripRepository;
+
+    @Autowired
     private TripPlanRepository tripPlanRepository;
 
     @Autowired
@@ -532,5 +535,64 @@ public class TripPlanService {
             System.out.println("City "+x);
         }
         return maps;
+    }
+
+    // --- Admin: Get trip counts by city and status for all users ---
+    public Map<String, Map<String, Integer>> getCityStatusCountsForAllUsers() {
+        List<TripPlan> tripPlans = tripPlanRepository.findAll();
+        Map<String, Map<String, Integer>> cityStatusCounts = new HashMap<>();
+        ObjectMapper mapper = new ObjectMapper();
+
+        // Aggregate individual trips by city and status
+        for (TripPlan tripPlan : tripPlans) {
+            String jsonString = tripPlan.getTripPlan();
+            String status = tripPlan.getStatus().getValue(); // "running", "upcoming", "completed"
+            String city = "";
+            try {
+                JsonNode root = mapper.readTree(jsonString);
+                JsonNode itinerary = root.path("trip_summary");
+                city = itinerary.path("destination").asText();
+            } catch (Exception e) {
+                continue;
+            }
+            if (city == null || city.isEmpty()) continue;
+
+            cityStatusCounts.putIfAbsent(city, new HashMap<>());
+            Map<String, Integer> statusMap = cityStatusCounts.get(city);
+            statusMap.put(status, statusMap.getOrDefault(status, 0) + 1);
+        }
+
+        // --- GROUP TRIP COUNTS BY CITY ---
+        List<com.example.demo.entity.GroupTrip> groupTrips = groupTripRepository.findAll();
+        for (com.example.demo.entity.GroupTrip groupTrip : groupTrips) {
+            Long tripPlanId = groupTrip.getTripPlanId();
+            TripPlan tripPlan = null;
+            try {
+                tripPlan = tripPlanRepository.findById(tripPlanId).orElse(null);
+            } catch (Exception e) {
+                continue;
+            }
+            if (tripPlan == null) continue;
+            String jsonString = tripPlan.getTripPlan();
+            String city = "";
+            try {
+                JsonNode root = mapper.readTree(jsonString);
+                JsonNode itinerary = root.path("trip_summary");
+                city = itinerary.path("destination").asText();
+            } catch (Exception e) {
+                continue;
+            }
+            if (city == null || city.isEmpty()) continue;
+            cityStatusCounts.putIfAbsent(city, new HashMap<>());
+            Map<String, Integer> statusMap = cityStatusCounts.get(city);
+            statusMap.put("group", statusMap.getOrDefault("group", 0) + 1);
+        }
+
+        // Ensure every city has a group field
+        for (Map<String, Integer> statusMap : cityStatusCounts.values()) {
+            statusMap.putIfAbsent("group", 0);
+        }
+
+        return cityStatusCounts;
     }
 }
