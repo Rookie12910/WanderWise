@@ -6,7 +6,7 @@ on:
       - main
 
 jobs:
-  Run frontend tests
+  # Run frontend tests
   frontend-tests:
     runs-on: ubuntu-latest
     name: Frontend Tests
@@ -62,7 +62,7 @@ jobs:
         working-directory: Backend
         run: ./mvnw clean test
 
-  # Deploy only if backend tests pass (frontend tests temporarily disabled)
+  # Deploy only if both frontend and backend tests pass
   deploy:
     runs-on: ubuntu-latest
     name: Deploy to Azure VM
@@ -131,7 +131,8 @@ jobs:
           echo "## 🚀 Deployment Summary" >> $GITHUB_STEP_SUMMARY
           echo "| Component | Status |" >> $GITHUB_STEP_SUMMARY
           echo "|-----------|--------|" >> $GITHUB_STEP_SUMMARY
-          echo "| Tests | ✅ Passed |" >> $GITHUB_STEP_SUMMARY
+          echo "| Frontend Tests | ✅ Passed |" >> $GITHUB_STEP_SUMMARY
+          echo "| Backend Tests | ✅ Passed |" >> $GITHUB_STEP_SUMMARY
           echo "| Deployment | ✅ Completed |" >> $GITHUB_STEP_SUMMARY
           echo "| Environment | Azure VM |" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
