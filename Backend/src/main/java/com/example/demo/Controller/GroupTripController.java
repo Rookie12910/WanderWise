@@ -72,6 +72,13 @@ public class GroupTripController {
                 ));
             }
 
+            if (request.getTripId() == null) {
+                return ResponseEntity.badRequest().body(Map.of(
+                    "success", false,
+                    "error", "Trip ID is required"
+                ));
+            }
+
             System.out.println("DEBUG: All validations passed, user ID: " + userId);
 
             // Call service

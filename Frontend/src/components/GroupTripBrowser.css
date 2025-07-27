@@ -589,6 +589,20 @@
 }
 
 .join-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.6);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+    backdrop-filter: blur(4px);
+}
+
+.join-modal-content {
     background: white;
     border-radius: 12px;
     max-width: 500px;
@@ -1610,5 +1624,270 @@
     
     .refresh-btn {
         align-self: flex-end;
+    }
+}
+
+/* Cost Benefits Section Styles */
+.cost-benefits-section {
+    margin-top: 24px;
+    padding: 20px;
+    background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
+    border-radius: 12px;
+    border: 2px solid #0ea5e9;
+    border-left: 6px solid #0ea5e9;
+}
+
+.cost-benefits-section h3 {
+    color: #0c4a6e;
+    margin-bottom: 16px;
+    font-size: 1.4rem;
+    font-weight: 700;
+    text-align: center;
+}
+
+.benefits-info {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.benefit-highlight {
+    text-align: center;
+    margin-bottom: 16px;
+}
+
+.benefit-title {
+    font-size: 1.2rem;
+    font-weight: 700;
+    color: #0c4a6e;
+    margin-bottom: 8px;
+}
+
+.benefit-description {
+    color: #1e40af;
+    font-size: 1rem;
+    margin: 0;
+}
+
+.savings-breakdown {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.savings-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 16px;
+    background: rgba(255, 255, 255, 0.8);
+    border-radius: 10px;
+    border: 1px solid #bae6fd;
+}
+
+.savings-icon {
+    font-size: 1.5rem;
+    min-width: 30px;
+    text-align: center;
+}
+
+.savings-content {
+    flex: 1;
+}
+
+.savings-content strong {
+    color: #0c4a6e;
+    font-size: 1.1rem;
+    display: block;
+    margin-bottom: 4px;
+}
+
+.savings-content p {
+    color: #1e40af;
+    margin: 0;
+    font-size: 0.95rem;
+    line-height: 1.4;
+}
+
+.savings-estimate {
+    margin-top: 16px;
+    padding: 16px;
+    background: rgba(34, 197, 94, 0.1);
+    border: 2px solid #22c55e;
+    border-radius: 10px;
+    text-align: center;
+}
+
+.estimate-box {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-bottom: 8px;
+}
+
+.estimate-label {
+    font-weight: 600;
+    color: #15803d;
+    font-size: 1rem;
+}
+
+.estimate-value {
+    font-size: 1.3rem;
+    font-weight: 700;
+    color: #22c55e;
+}
+
+.estimate-note {
+    font-size: 0.85rem;
+    color: #16a34a;
+    margin: 0;
+    font-style: italic;
+}
+
+/* Cost Benefits Section for Modal */
+.cost-benefits-section-modal {
+    margin-top: 20px;
+    padding: 16px;
+    background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
+    border-radius: 10px;
+    border: 2px solid #0ea5e9;
+}
+
+.cost-benefits-section-modal h3 {
+    color: #0c4a6e;
+    margin-bottom: 12px;
+    font-size: 1.2rem;
+    font-weight: 700;
+    text-align: center;
+}
+
+.benefits-info-modal {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.benefit-highlight-modal {
+    text-align: center;
+    margin-bottom: 12px;
+}
+
+.benefit-title-modal {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: #0c4a6e;
+    margin-bottom: 6px;
+}
+
+.benefit-description-modal {
+    color: #1e40af;
+    font-size: 0.9rem;
+    margin: 0;
+}
+
+.savings-breakdown-modal {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.savings-item-modal {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    padding: 12px;
+    background: rgba(255, 255, 255, 0.8);
+    border-radius: 8px;
+    border: 1px solid #bae6fd;
+}
+
+.savings-icon-modal {
+    font-size: 1.2rem;
+    min-width: 25px;
+    text-align: center;
+}
+
+.savings-content-modal {
+    flex: 1;
+}
+
+.savings-content-modal strong {
+    color: #0c4a6e;
+    font-size: 1rem;
+    display: block;
+    margin-bottom: 3px;
+}
+
+.savings-content-modal p {
+    color: #1e40af;
+    margin: 0;
+    font-size: 0.85rem;
+    line-height: 1.3;
+}
+
+.savings-estimate-modal {
+    margin-top: 12px;
+    padding: 12px;
+    background: rgba(34, 197, 94, 0.1);
+    border: 2px solid #22c55e;
+    border-radius: 8px;
+    text-align: center;
+}
+
+.estimate-box-modal {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    margin-bottom: 6px;
+}
+
+.estimate-label-modal {
+    font-weight: 600;
+    color: #15803d;
+    font-size: 0.9rem;
+}
+
+.estimate-value-modal {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: #22c55e;
+}
+
+.estimate-note-modal {
+    font-size: 0.75rem;
+    color: #16a34a;
+    margin: 0;
+    font-style: italic;
+}
+
+/* Responsive Design for Cost Benefits */
+@media (max-width: 768px) {
+    .cost-benefits-section {
+        padding: 16px;
+        margin-top: 20px;
+    }
+    
+    .cost-benefits-section h3 {
+        font-size: 1.2rem;
+    }
+    
+    .benefit-title {
+        font-size: 1.1rem;
+    }
+    
+    .savings-item {
+        padding: 12px;
+    }
+    
+    .savings-content strong {
+        font-size: 1rem;
+    }
+    
+    .savings-content p {
+        font-size: 0.9rem;
+    }
+    
+    .estimate-value {
+        font-size: 1.1rem;
     }
 }
