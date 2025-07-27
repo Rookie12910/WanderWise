@@ -206,6 +206,9 @@ describe('Signup Component', () => {
     const errorMessage = 'Email already exists';
     mockSignup.mockRejectedValueOnce(new Error(errorMessage));
     
+    // Suppress console.error for this test
+    const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+    
     renderWithProviders(<Signup />);
     
     fireEvent.click(screen.getByRole('button', { name: /sign up with email/i }));
@@ -220,6 +223,8 @@ describe('Signup Component', () => {
     await waitFor(() => {
       expect(screen.getByText(errorMessage)).toBeInTheDocument();
     });
+    
+    consoleSpy.mockRestore();
   });
 
   test('shows loading state during signup', async () => {
@@ -310,6 +315,9 @@ describe('Signup Component', () => {
       .mockRejectedValueOnce(new Error('First error'))
       .mockResolvedValueOnce({ success: true });
     
+    // Suppress console.error for this test
+    const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+    
     renderWithProviders(<Signup />);
     
     fireEvent.click(screen.getByRole('button', { name: /sign up with email/i }));
@@ -332,6 +340,8 @@ describe('Signup Component', () => {
     await waitFor(() => {
       expect(screen.queryByText('First error')).not.toBeInTheDocument();
     });
+    
+    consoleSpy.mockRestore();
   });
 
   test('handles form submission with empty fields', async () => {

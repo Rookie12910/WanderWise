@@ -126,6 +126,9 @@ describe('Login Component', () => {
     const errorMessage = 'Invalid credentials';
     mockLogin.mockRejectedValueOnce(new Error(errorMessage));
     
+    // Suppress console.error for this test
+    const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+    
     renderWithProviders(<Login />);
     
     fireEvent.change(screen.getByLabelText('Email'), { 
@@ -140,6 +143,8 @@ describe('Login Component', () => {
     await waitFor(() => {
       expect(screen.getByText(errorMessage)).toBeInTheDocument();
     });
+    
+    consoleSpy.mockRestore();
   });
 
   test('shows loading state during login', async () => {
@@ -233,6 +238,9 @@ describe('Login Component', () => {
       .mockRejectedValueOnce(new Error('First error'))
       .mockResolvedValueOnce({ success: true });
     
+    // Suppress console.error for this test
+    const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+    
     renderWithProviders(<Login />);
     
     // First submission with error
@@ -259,6 +267,8 @@ describe('Login Component', () => {
     await waitFor(() => {
       expect(screen.queryByText('First error')).not.toBeInTheDocument();
     });
+    
+    consoleSpy.mockRestore();
   });
 
   test('handles form submission with empty fields', async () => {

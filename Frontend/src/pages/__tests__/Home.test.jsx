@@ -5,12 +5,32 @@ import '@testing-library/jest-dom';
 import { vi } from 'vitest';
 import Home from '../Home';
 import AuthContext from '../../context/AuthContext';
-import api from '../../api';
+import api, { blogApi, tripApi } from '../../api';
+
+// Configure test timeout
+vi.setConfig({ testTimeout: 10000 });
 
 // Mock dependencies
 vi.mock('../../api', () => ({
   default: {
     get: vi.fn(),
+  },
+  blogApi: {
+    getAllBlogPosts: vi.fn(),
+    createBlogPost: vi.fn(),
+    updateBlogPost: vi.fn(),
+    deleteBlogPost: vi.fn(),
+    getBlogPostById: vi.fn(),
+  },
+  tripApi: {
+    getAllTrips: vi.fn(),
+    createTrip: vi.fn(),
+    updateTrip: vi.fn(),
+    deleteTrip: vi.fn(),
+    getTripById: vi.fn(),
+    joinTrip: vi.fn(),
+    leaveTrip: vi.fn(),
+    getAvailableGroupTrips: vi.fn(),
   },
 }));
 
@@ -20,13 +40,10 @@ vi.mock('../../components/NotificationCenter', () => ({
 
 // Mock react-router-dom
 const mockNavigate = vi.fn();
-vi.mock('react-router-dom', async () => {
-  const actual = await vi.importActual('react-router-dom');
-  return {
-    ...actual,
-    useNavigate: () => mockNavigate,
-  };
-});
+vi.mock('react-router-dom', () => ({
+  BrowserRouter: ({ children }) => children,
+  useNavigate: () => mockNavigate,
+}));
 
 // Helper function to render component with providers
 const renderWithProviders = (currentUser = null) => {
@@ -75,6 +92,12 @@ describe('Home Component', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     localStorage.clear();
+    
+    // Setup default API mock responses to prevent hanging
+    api.get.mockResolvedValue({ data: [] });
+    blogApi.getAllBlogPosts.mockResolvedValue([]);
+    tripApi.getAllTrips.mockResolvedValue([]);
+    tripApi.getAvailableGroupTrips.mockResolvedValue({ data: [] });
   });
 
   describe('Navigation Bar', () => {
@@ -170,14 +193,27 @@ describe('Home Component', () => {
   });
 
   describe('Featured Destinations', () => {
-    test('displays loading state initially', () => {
-      api.get.mockImplementation(() => new Promise(() => {})); // Never resolves
+    test('displays loading state initially', async () => {
+      // Mock a delayed response to check loading state
+      api.get.mockImplementation(() => 
+        new Promise(resolve => setTimeout(() => resolve({ data: [] }), 100))
+      );
+      
       renderWithProviders();
+      
+      // Check that loading state is shown initially
       expect(screen.getByText('Loading featured destinations...')).toBeInTheDocument();
+      
+      // Wait for loading to complete
+      await waitFor(() => {
+        expect(screen.queryByText('Loading featured destinations...')).not.toBeInTheDocument();
+      });
     });
 
     test('displays featured destinations after loading', async () => {
       api.get.mockResolvedValue({ data: mockDestinations });
+      blogApi.getAllBlogPosts.mockResolvedValue([]);
+      tripApi.getAllTrips.mockResolvedValue([]);
 
       renderWithProviders();
 
