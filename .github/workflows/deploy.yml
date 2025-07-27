@@ -24,7 +24,13 @@ jobs:
 
       - name: Install frontend dependencies
         working-directory: Frontend
-        run: npm ci
+        run: |
+          if npm ci; then
+            echo "✅ npm ci succeeded"
+          else
+            echo "⚠️ npm ci failed, falling back to npm install"
+            npm install
+          fi
 
       - name: Run frontend tests
         working-directory: Frontend
@@ -66,7 +72,7 @@ jobs:
   deploy:
     runs-on: ubuntu-latest
     name: Deploy to Azure VM
-    needs: [backend-tests]
+    needs: [frontend-tests, backend-tests]
     
     steps:
       - name: Checkout repository
