@@ -36,7 +36,7 @@ public class WeatherMonitoringService {
     private static final String API_KEY = "c0859dd16f5c4108a0571407250307";
 
     // Run every 10 minutes for testing (change to longer for production)
-    @Scheduled(fixedRate = 60000) // 1 minute
+    @Scheduled(fixedRate = 18000000) // 5 hours = 5 * 60 * 60 * 1000 ms
     public void scheduleWeatherCheck() {
         String timestamp = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
         

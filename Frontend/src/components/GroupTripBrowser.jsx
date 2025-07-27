@@ -3,7 +3,6 @@ import { tripApi } from '../api';
 import './GroupTripBrowser.css';
 import './PreviewChatStyles.css';
 import AuthContext from '../context/AuthContext';
-import { getBudgetDisplayInfo, formatCurrency } from '../utils/budgetCalculations';
 
 const GroupTripBrowser = () => {
     const { currentUser } = useContext(AuthContext);
@@ -295,27 +294,8 @@ const GroupTripBrowser = () => {
                                         <span className="value">{parsedTripPlan?.trip_summary?.start_date || 'N/A'}</span>
                                     </div>
                                     <div className="summary-row">
-                                        <span className="label">Budget per Person:</span>
-                                        <span className="value">
-                                            {(() => {
-                                                const budgetInfo = getBudgetDisplayInfo(
-                                                    parsedTripPlan?.trip_summary?.total_budget,
-                                                    trip.currentMembers,
-                                                    trip.maxPeople,
-                                                    true
-                                                );
-                                                return (
-                                                    <div className="budget-info">
-                                                        <div className="current-budget">{budgetInfo.currentPerPersonText}</div>
-                                                        {budgetInfo.savingsText && (
-                                                            <div className="savings-text" style={{fontSize: '0.8em', color: '#28a745'}}>
-                                                                {budgetInfo.savingsText}
-                                                            </div>
-                                                        )}
-                                                    </div>
-                                                );
-                                            })()}
-                                        </span>
+                                        <span className="label">Budget:</span>
+                                        <span className="value">৳{parsedTripPlan?.trip_summary?.total_budget?.toLocaleString() || 'N/A'}</span>
                                     </div>
                                 </div>
                                 
@@ -389,36 +369,10 @@ const GroupTripBrowser = () => {
                                                'Not specified'}</span>
                                     </div>
                                     <div className="overview-item">
-                                        <strong>Budget per Person (Current):</strong>
-                                        <span>
-                                            {(() => {
-                                                const budgetInfo = getBudgetDisplayInfo(
-                                                    selectedTrip.tripPlan?.trip_summary?.total_budget,
-                                                    selectedTrip.currentMembers,
-                                                    selectedTrip.maxPeople,
-                                                    false
-                                                );
-                                                return budgetInfo.currentPerPersonText;
-                                            })()}
-                                        </span>
-                                    </div>
-                                    <div className="overview-item">
-                                        <strong>Budget per Person (When Full):</strong>
-                                        <span>
-                                            {(() => {
-                                                const budgetInfo = getBudgetDisplayInfo(
-                                                    selectedTrip.tripPlan?.trip_summary?.total_budget,
-                                                    selectedTrip.currentMembers,
-                                                    selectedTrip.maxPeople,
-                                                    true
-                                                );
-                                                return budgetInfo.maxCapacityText || budgetInfo.currentPerPersonText;
-                                            })()}
-                                        </span>
-                                    </div>
-                                    <div className="overview-item">
-                                        <strong>Total Trip Budget:</strong>
-                                        <span>{formatCurrency(selectedTrip.tripPlan?.trip_summary?.total_budget)}</span>
+                                        <strong>Budget per Person:</strong>
+                                        <span>{selectedTrip.tripPlan?.trip_summary?.total_budget ? 
+                                               `৳${selectedTrip.tripPlan.trip_summary.total_budget.toLocaleString()}` : 
+                                               'Not specified'}</span>
                                     </div>
                                     <div className="overview-item">
                                         <strong>Status:</strong>
@@ -528,6 +482,62 @@ const GroupTripBrowser = () => {
                                         <div className="budget-item">
                                             <span>Activities:</span>
                                             <span>৳{selectedTrip.tripPlan.budget_summary.total_activities?.toLocaleString()}</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            )}
+
+                            {/* Cost Reduction Benefits */}
+                            {selectedTrip.tripPlan?.budget_summary && (
+                                <div className="cost-benefits-section">
+                                    <h3>💰 Group Travel Savings</h3>
+                                    <div className="benefits-info">
+                                        <div className="benefit-highlight">
+                                            <div className="benefit-title">More Members = Lower Costs!</div>
+                                            <p className="benefit-description">
+                                                Join this group trip and save money through shared expenses:
+                                            </p>
+                                        </div>
+                                        
+                                        <div className="savings-breakdown">
+                                            <div className="savings-item">
+                                                <span className="savings-icon">🏨</span>
+                                                <div className="savings-content">
+                                                    <strong>Hotel Room Sharing</strong>
+                                                    <p>Split accommodation costs by sharing rooms with fellow travelers. 2-4 people per room can reduce costs by 50-75%!</p>
+                                                </div>
+                                            </div>
+                                            
+                                            <div className="savings-item">
+                                                <span className="savings-icon">🚗</span>
+                                                <div className="savings-content">
+                                                    <strong>Transportation Sharing</strong>
+                                                    <p>Share bus, taxi, or rental car costs. More members mean everyone pays less for getting around!</p>
+                                                </div>
+                                            </div>
+                                            
+                                            <div className="savings-item">
+                                                <span className="savings-icon">🎫</span>
+                                                <div className="savings-content">
+                                                    <strong>Group Discounts</strong>
+                                                    <p>Many attractions and tour operators offer group discounts for 6+ people. Save on entry fees and activities!</p>
+                                                </div>
+                                            </div>
+                                            
+                                            <div className="savings-estimate">
+                                                <div className="estimate-box">
+                                                    <span className="estimate-label">Potential Savings with Full Group:</span>
+                                                    <span className="estimate-value">
+                                                        ৳{Math.round((selectedTrip.tripPlan.budget_summary.total_accommodation + 
+                                                                    selectedTrip.tripPlan.budget_summary.total_transport) * 0.3)?.toLocaleString()} - 
+                                                        ৳{Math.round((selectedTrip.tripPlan.budget_summary.total_accommodation + 
+                                                                    selectedTrip.tripPlan.budget_summary.total_transport) * 0.5)?.toLocaleString()}
+                                                    </span>
+                                                </div>
+                                                <p className="estimate-note">
+                                                    *Based on sharing accommodation and transportation costs
+                                                </p>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>

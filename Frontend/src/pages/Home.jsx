@@ -6,7 +6,6 @@ import { FaStar } from 'react-icons/fa';
 import Navbar from '../components/Navbar';
 import '../styles/home.css';
 import '../styles/home-trips.css';
-import { getBudgetDisplayInfo, formatCurrency } from '../utils/budgetCalculations';
 
 const Home = () => {
   const { currentUser } = useContext(AuthContext);
@@ -328,15 +327,7 @@ const Home = () => {
                           <b>To:</b> {parsedTripPlan?.trip_summary?.destination || 'N/A'}<br/>
                           <b>Duration:</b> {parsedTripPlan?.trip_summary?.duration || 'N/A'} days<br/>
                           <b>Start Date:</b> {parsedTripPlan?.trip_summary?.start_date || 'N/A'}<br/>
-                          <b>Budget per Person:</b> {(() => {
-                            const budgetInfo = getBudgetDisplayInfo(
-                              parsedTripPlan?.trip_summary?.total_budget,
-                              trip.currentMembers,
-                              trip.maxPeople,
-                              false
-                            );
-                            return budgetInfo.currentPerPersonText;
-                          })()}
+                          <b>Budget per Person:</b> ৳{parsedTripPlan?.trip_summary?.total_budget?.toLocaleString() || 'N/A'}
                         </div>
                         <div style={{marginBottom:'1rem',fontSize:'0.98rem',color:'#555'}}>
                           Members: {trip.currentMembers}/{trip.maxPeople}<br/>
@@ -498,36 +489,10 @@ const Home = () => {
                            'Not specified'}</span>
                   </div>
                   <div className="overview-item">
-                    <strong>Budget per Person (Current):</strong>
-                    <span>
-                      {(() => {
-                        const budgetInfo = getBudgetDisplayInfo(
-                          selectedTrip.tripPlan?.trip_summary?.total_budget,
-                          selectedTrip.currentMembers,
-                          selectedTrip.maxPeople,
-                          false
-                        );
-                        return budgetInfo.currentPerPersonText;
-                      })()}
-                    </span>
-                  </div>
-                  <div className="overview-item">
-                    <strong>Budget per Person (When Full):</strong>
-                    <span>
-                      {(() => {
-                        const budgetInfo = getBudgetDisplayInfo(
-                          selectedTrip.tripPlan?.trip_summary?.total_budget,
-                          selectedTrip.currentMembers,
-                          selectedTrip.maxPeople,
-                          true
-                        );
-                        return budgetInfo.maxCapacityText || budgetInfo.currentPerPersonText;
-                      })()}
-                    </span>
-                  </div>
-                  <div className="overview-item">
-                    <strong>Total Trip Budget:</strong>
-                    <span>{formatCurrency(selectedTrip.tripPlan?.trip_summary?.total_budget)}</span>
+                    <strong>Budget per Person:</strong>
+                    <span>{selectedTrip.tripPlan?.trip_summary?.total_budget ? 
+                           `৳${selectedTrip.tripPlan.trip_summary.total_budget.toLocaleString()}` : 
+                           'Not specified'}</span>
                   </div>
                   <div className="overview-item">
                     <strong>Status:</strong>

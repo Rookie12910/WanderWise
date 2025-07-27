@@ -549,6 +549,62 @@ const TripDetailsModal = ({ trip, isOpen, onClose }) => {
               </div>
             </div>
           )}
+
+          {/* Cost Reduction Benefits */}
+          {budgetSummary && Object.keys(budgetSummary).length > 0 && (
+            <div className="cost-benefits-section-modal">
+              <h3>💰 Group Travel Savings</h3>
+              <div className="benefits-info-modal">
+                <div className="benefit-highlight-modal">
+                  <div className="benefit-title-modal">More Members = Lower Costs!</div>
+                  <p className="benefit-description-modal">
+                    Join a group trip and save money through shared expenses:
+                  </p>
+                </div>
+                
+                <div className="savings-breakdown-modal">
+                  <div className="savings-item-modal">
+                    <span className="savings-icon-modal">🏨</span>
+                    <div className="savings-content-modal">
+                      <strong>Hotel Room Sharing</strong>
+                      <p>Split accommodation costs by sharing rooms. 2-4 people per room can reduce costs by 50-75%!</p>
+                    </div>
+                  </div>
+                  
+                  <div className="savings-item-modal">
+                    <span className="savings-icon-modal">🚗</span>
+                    <div className="savings-content-modal">
+                      <strong>Transportation Sharing</strong>
+                      <p>Share bus, taxi, or rental car costs. More members mean everyone pays less!</p>
+                    </div>
+                  </div>
+                  
+                  <div className="savings-item-modal">
+                    <span className="savings-icon-modal">🎫</span>
+                    <div className="savings-content-modal">
+                      <strong>Group Discounts</strong>
+                      <p>Many attractions offer group discounts for 6+ people. Save on entry fees!</p>
+                    </div>
+                  </div>
+                  
+                  <div className="savings-estimate-modal">
+                    <div className="estimate-box-modal">
+                      <span className="estimate-label-modal">Potential Savings with Full Group:</span>
+                      <span className="estimate-value-modal">
+                        ৳{Math.round(((budgetSummary.total_accommodation || 0) + 
+                                    (budgetSummary.total_transport || 0)) * 0.3)?.toLocaleString()} - 
+                        ৳{Math.round(((budgetSummary.total_accommodation || 0) + 
+                                    (budgetSummary.total_transport || 0)) * 0.5)?.toLocaleString()}
+                      </span>
+                    </div>
+                    <p className="estimate-note-modal">
+                      *Based on sharing accommodation and transportation costs
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
         </div>
         <div className="modal-footer">
           <button className="btn-outline" onClick={onClose}>
